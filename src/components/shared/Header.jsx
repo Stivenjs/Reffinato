@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +33,9 @@ import {
   Menu,
   ChevronDown,
   Shirt,
-  Umbrella,
   ShoppingCart,
 } from "lucide-react";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const categories = {
   BIKINI: [
@@ -116,121 +113,111 @@ const NavItem = ({ item, isScrolled }) => {
   );
 };
 
-export default function Component({
-  cartItems = [],
-  wishlistItems = [],
-  openCart = () => {},
+export default function Header({
+  isScrolled,
+  cartItems,
+  wishlistItems,
+  addToCart,
+  openCart,
 }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
-  const controls = useAnimation();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("Búsqueda realizada:", searchQuery);
     setIsSearchOpen(false);
     setSearchQuery("");
   };
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsAtTop(scrollY < 50);
-      setIsScrolled(scrollY >= 50);
-
-      if (scrollY >= 50) {
-        controls.start({
-          height: "60px",
-          backgroundColor: "rgba(20, 184, 166, 0.9)",
-          transition: { duration: 0.3 },
-        });
-      } else {
-        controls.start({
-          height: "80px",
-          backgroundColor: "rgb(20, 184, 166)",
-          transition: { duration: 0.3 },
-        });
-      }
+      setIsAtTop(window.scrollY < 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [controls]);
+  }, []);
 
   return (
-    <motion.header
-      className="fixed w-full z-50"
-      initial={false}
-      animate={controls}
+    <header
+      className={`w-screen fixed z-50 transition-all duration-300 ${
+        isScrolled ? "bg-teal-500/90 py-1" : "bg-teal-500 py-4"
+      }`}
     >
+      <Sheet>
+        <SheetTrigger
+          asChild
+          className="text-white hover:text-teal-800 block lg:hidden"
+        >
+          <Menu className="h-6 w-6" />
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+          <nav className="flex flex-col space-y-4 mt-10">
+            <Accordion type="single" collapsible className="w-full">
+              {[
+                "BIKINI",
+                "SWIMSUITS",
+                "BEACHWEAR",
+                "SHOP",
+                "REFFINATO GOLD",
+              ].map((item) => (
+                <AccordionItem value={item} key={item}>
+                  <AccordionTrigger className="text-teal-600 hover:text-teal-800">
+                    {item}
+                  </AccordionTrigger>
+                  {["BIKINI", "SWIMSUITS", "BEACHWEAR"].includes(item) && (
+                    <AccordionContent>
+                      <div className="ml-4 space-y-2">
+                        {categories[item].map((subItem) => (
+                          <Button
+                            key={subItem.name}
+                            variant="ghost"
+                            className="text-teal-600 hover:text-teal-800 justify-start w-full"
+                          >
+                            {subItem.icon}
+                            {subItem.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  )}
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </nav>
+        </SheetContent>
+      </Sheet>
       <div className="container mx-auto px-4">
-        <div className={`flex items-center justify-between h-full`}>
-          <div className="flex items-center">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="mr-2 lg:hidden text-white hover:bg-teal-600 hover:text-white"
-                >
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4 mt-8">
-                  <Accordion type="single" collapsible className="w-full">
-                    {[
-                      "BIKINI",
-                      "SWIMSUITS",
-                      "BEACHWEAR",
-                      "SHOP",
-                      "REFFINATO GOLD",
-                    ].map((item) => (
-                      <AccordionItem value={item} key={item}>
-                        <AccordionTrigger className="text-teal-600 hover:text-teal-800">
-                          {item}
-                        </AccordionTrigger>
-                        {["BIKINI", "SWIMSUITS", "BEACHWEAR"].includes(
-                          item
-                        ) && (
-                          <AccordionContent>
-                            <div className="ml-4 space-y-2">
-                              {categories[item].map((subItem) => (
-                                <Button
-                                  key={subItem.name}
-                                  variant="ghost"
-                                  className="text-teal-600 hover:text-teal-800 justify-start w-full"
-                                >
-                                  {subItem.icon}
-                                  {subItem.name}
-                                </Button>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        )}
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </nav>
-              </SheetContent>
-            </Sheet>
+        <div
+          className={`flex flex-col lg:flex-row items-center justify-between ${
+            isAtTop ? "lg:flex-col" : ""
+          }`}
+        >
+          <motion.div
+            className={`flex items-center ${isAtTop ? "lg:mb-4" : "lg:mb-0"}`}
+            initial={false}
+            animate={{
+              alignSelf: isAtTop ? "center" : "flex-start",
+            }}
+            transition={{ duration: 0.3 }}
+          >
             <motion.img
               src="/placeholder.svg?height=50&width=150&text=Reffinato%20Logo"
               alt="Reffinato Logo"
-              className="h-8"
+              className={`h-${isScrolled ? "0" : "0"}`}
               initial={false}
               animate={{
                 scale: isScrolled ? 0.8 : 1,
               }}
               transition={{ duration: 0.3 }}
             />
-          </div>
-          <nav className="hidden lg:flex space-x-4">
+          </motion.div>
+          <nav className={`hidden lg:flex space-x-4 ${isAtTop ? "mt-2" : ""}`}>
             {["BIKINI", "SWIMSUITS", "BEACHWEAR", "SHOP"].map((item) => (
               <NavItem key={item} item={item} isScrolled={isScrolled} />
             ))}
           </nav>
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
             <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -311,16 +298,16 @@ export default function Component({
                   variant="ghost"
                   size="icon"
                   onClick={openCart}
-                  className="text-white hover:bg-teal-600 hover:text-white relative"
+                  className="text-white hover:bg-teal-600 hover:text-white"
                 >
                   <ShoppingBag
                     className={`transition-all duration-300 ${
                       isScrolled ? "h-4 w-4" : "h-5 w-5"
                     }`}
                   />
-                  {cartItems.length > 0 && (
+                  {cartItems > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
-                      {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                      {cartItems}
                     </span>
                   )}
                 </Button>
@@ -332,6 +319,6 @@ export default function Component({
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

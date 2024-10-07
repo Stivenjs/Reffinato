@@ -1,324 +1,339 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  ShoppingBag,
   Search,
   User,
   Heart,
+  ShoppingBag,
+  X,
   Menu,
-  ChevronDown,
-  Shirt,
-  ShoppingCart,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const categories = {
-  BIKINI: [
-    { name: "Triángulo" },
-    { name: "Bandeau" },
-    { name: "Tanga" },
-    { name: "Push-up" },
-  ],
-  SWIMSUITS: [
-    { name: "Una pieza" },
-    { name: "Tankini" },
-    { name: "Monokini" },
-    { name: "Trikini" },
-  ],
-  BEACHWEAR: [
-    { name: "Pareos", icon: <Shirt className="w-4 h-4 mr-2" /> },
-    { name: "Vestidos de playa", icon: <Shirt className="w-4 h-4 mr-2" /> },
-    { name: "Túnicas", icon: <Shirt className="w-4 h-4 mr-2" /> },
-    { name: "Shorts", icon: <Shirt className="w-4 h-4 mr-2" /> },
-  ],
-};
-
-const NavItem = ({ item, isScrolled }) => {
-  if (["BIKINI", "SWIMSUITS", "BEACHWEAR"].includes(item)) {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={`text-white hover:bg-teal-600 hover:text-white transition-all duration-300 ${
-              isScrolled ? "text-sm py-1" : "text-base py-2"
-            }`}
-          >
-            {item} <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="w-56 bg-white/95 backdrop-blur-md border border-teal-200 rounded-lg shadow-lg p-2"
-          align="start"
-        >
-          <AnimatePresence>
-            {categories[item].map((subItem, index) => (
-              <motion.div
-                key={subItem.name}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-              >
-                <DropdownMenuItem className="text-teal-800 hover:bg-teal-100 focus:bg-teal-100 rounded-md transition-colors duration-200 flex items-center">
-                  {subItem.icon}
-                  {subItem.name}
-                </DropdownMenuItem>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          <DropdownMenuSeparator className="my-2 bg-teal-200" />
-          <DropdownMenuItem className="text-teal-800 hover:bg-teal-100 focus:bg-teal-100 rounded-md transition-colors duration-200 flex items-center">
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Ver todo
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }
-  return (
-    <Button
-      variant="ghost"
-      className={`text-white hover:bg-teal-600 hover:text-white transition-all duration-300 ${
-        isScrolled ? "text-sm py-1" : "text-base py-2"
-      }`}
-    >
-      {item}
-    </Button>
-  );
-};
-
-export default function Header({
-  isScrolled,
-  cartItems,
-  wishlistItems,
-  addToCart,
-  openCart,
-}) {
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import WordRotate from "../../components/ui/word-rotate";
+export default function Header() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAtTop, setIsAtTop] = useState(true);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setIsSearchOpen(false);
-    setSearchQuery("");
-  };
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([
+    {
+      id: 1,
+      name: "Summer Breeze Bikini",
+      price: 59.99,
+      image: "/placeholder.svg?height=80&width=80",
+      quantity: 1,
+    },
+    {
+      id: 2,
+      name: "Tropical Paradise Shorts",
+      price: 39.99,
+      image: "/placeholder.svg?height=80&width=80",
+      quantity: 2,
+    },
+    {
+      id: 3,
+      name: "Sunset Glow Beach Towel",
+      price: 24.99,
+      image: "/placeholder.svg?height=80&width=80",
+      quantity: 1,
+    },
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsAtTop(window.scrollY < 50);
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const menuItems = [
+    { id: 2, to: "/products/swimwear", label: "Bikini" },
+    { id: 3, to: "/products/beach-clothing", label: "Swimsuits" },
+    { id: 4, to: "/products/activewear", label: "Beachwear" },
+    { id: 5, to: "/products", label: "Shop" },
+    { id: 6, to: "/reffinato-gold", label: "Reffinato Gold" },
+  ];
+
+  const updateQuantity = (id, change) => {
+    setCartItems((items) =>
+      items
+        .map((item) =>
+          item.id === id
+            ? { ...item, quantity: Math.max(0, item.quantity + change) }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
   return (
-    <header
-      className={`w-screen fixed z-50 transition-all duration-300 ${
-        isScrolled ? "bg-teal-500/90 py-1" : "bg-teal-500 py-4"
-      }`}
-    >
-      <Sheet>
-        <SheetTrigger
-          asChild
-          className="text-white hover:text-teal-800 block lg:hidden"
-        >
-          <Menu className="h-6 w-6" />
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-          <nav className="flex flex-col space-y-4 mt-10">
-            <Accordion type="single" collapsible className="w-full">
-              {[
-                "BIKINI",
-                "SWIMSUITS",
-                "BEACHWEAR",
-                "SHOP",
-                "REFFINATO GOLD",
-              ].map((item) => (
-                <AccordionItem value={item} key={item}>
-                  <AccordionTrigger className="text-teal-600 hover:text-teal-800">
-                    {item}
-                  </AccordionTrigger>
-                  {["BIKINI", "SWIMSUITS", "BEACHWEAR"].includes(item) && (
-                    <AccordionContent>
-                      <div className="ml-4 space-y-2">
-                        {categories[item].map((subItem) => (
-                          <Button
-                            key={subItem.name}
-                            variant="ghost"
-                            className="text-teal-600 hover:text-teal-800 justify-start w-full"
-                          >
-                            {subItem.icon}
-                            {subItem.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  )}
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </nav>
-        </SheetContent>
-      </Sheet>
-      <div className="container mx-auto px-4">
-        <div
-          className={`flex flex-col lg:flex-row items-center justify-between ${
-            isAtTop ? "lg:flex-col" : ""
-          }`}
-        >
-          <motion.div
-            className={`flex items-center ${isAtTop ? "lg:mb-4" : "lg:mb-0"}`}
-            initial={false}
-            animate={{
-              alignSelf: isAtTop ? "center" : "flex-start",
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.img
-              src="/placeholder.svg?height=50&width=150&text=Reffinato%20Logo"
-              alt="Reffinato Logo"
-              className={`h-${isScrolled ? "0" : "0"}`}
-              initial={false}
-              animate={{
-                scale: isScrolled ? 0.8 : 1,
+    <TooltipProvider>
+      <motion.nav
+        className="fixed top-0 left-0 right-0 z-40 bg-white"
+        initial={{ y: 0 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <AnimatePresence initial={false}>
+          {!isScrolled && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{
+                opacity: { duration: 0.2, ease: "easeInOut" },
+                height: { duration: 0.3, ease: "easeInOut" },
               }}
-              transition={{ duration: 0.3 }}
-            />
-          </motion.div>
-          <nav className={`hidden lg:flex space-x-4 ${isAtTop ? "mt-2" : ""}`}>
-            {["BIKINI", "SWIMSUITS", "BEACHWEAR", "SHOP"].map((item) => (
-              <NavItem key={item} item={item} isScrolled={isScrolled} />
-            ))}
-          </nav>
-          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-teal-600 hover:text-white"
-                >
-                  <Search
-                    className={`transition-all duration-300 ${
-                      isScrolled ? "h-4 w-4" : "h-5 w-5"
-                    }`}
+            >
+              <div className="bg-teal-800 text-white py-1 px-4 text-xs md:text-sm flex flex-col md:flex-row justify-between items-center overflow-hidden">
+                <div className="flex items-center mb-1 md:mb-0"></div>
+                <div className="mb-1 md:mb-0">
+                  <WordRotate
+                    words={[
+                      "TAKE ADVANTAGE",
+                      "NEWSLETTER 10% DISCOUNT ON THE FIRST ORDER",
+                    ]}
                   />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-0">
-                <form onSubmit={handleSearch} className="flex items-center">
-                  <Input
-                    type="text"
-                    placeholder="Buscar productos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-grow border-none focus:ring-0"
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="rounded-l-none bg-teal-600 hover:bg-teal-700"
-                  >
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </form>
-              </PopoverContent>
-            </Popover>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-teal-600 hover:text-white"
-                >
-                  <User
-                    className={`transition-all duration-300 ${
-                      isScrolled ? "h-4 w-4" : "h-5 w-5"
-                    }`}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Mi cuenta</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-teal-600 hover:text-white relative"
-                >
-                  <Heart
-                    className={`transition-all duration-300 ${
-                      isScrolled ? "h-4 w-4" : "h-5 w-5"
-                    }`}
-                  />
-                  {wishlistItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
-                      {wishlistItems.length}
-                    </span>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Mis favoritos</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={openCart}
-                  className="text-white hover:bg-teal-600 hover:text-white"
-                >
-                  <ShoppingBag
-                    className={`transition-all duration-300 ${
-                      isScrolled ? "h-4 w-4" : "h-5 w-5"
-                    }`}
-                  />
-                  {cartItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
-                      {cartItems}
-                    </span>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Carrito de compras</p>
-              </TooltipContent>
-            </Tooltip>
+                </div>
+                <div>New collection 2024</div>
+              </div>
+              <div className="bg-gray-100 py-2 px-4 text-xs md:text-sm flex justify-between items-center overflow-hidden">
+                <div className="flex items-center">
+                  <span className="mr-4">Do you need help?</span>
+                </div>
+                <div className="flex items-center">
+                  <span>POINT OF SALE</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.div
+          className={`container mx-auto px-4 transition-all duration-300 ${
+            isScrolled ? "border-b" : ""
+          }`}
+          initial={true}
+          animate={{
+            paddingTop: isScrolled ? 8 : 8,
+            paddingBottom: isScrolled ? 8 : 8,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <Link to="/" className="text-2xl font-bold">
+              <img src="#" alt="Reffinato" className="h-6 md:h-8" />
+            </Link>
+            <div className="hidden md:flex items-center space-x-4 lg:space-x-6 text-xs lg:text-sm">
+              {menuItems.map((item) => (
+                <Link key={item.id} to={item.to} className="relative group">
+                  <span className="relative z-10">{item.label}</span>
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => setIsSearchOpen(true)} className="p-2">
+                    <Search className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-2">
+                    <User className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Account</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-2">
+                    <Heart className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Favorites</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => setIsCartOpen(true)} className="p-2">
+                    <ShoppingBag className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Cart</p>
+                </TooltipContent>
+              </Tooltip>
+              <span className="hidden md:inline">COLOMBIA</span>
+              <button
+                className="md:hidden p-2"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-    </header>
+        </motion.div>
+      </motion.nav>
+      {isScrolled && <div className="h-16 md:h-20" />}
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-x-0 top-0 bg-white z-50 md:hidden h-full overflow-y-auto"
+          >
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Menu</h2>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block py-2 hover:bg-gray-100 relative group"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cart Slide-out */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween" }}
+            className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-lg overflow-y-auto"
+          >
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Your Cart</h2>
+                <button onClick={() => setIsCartOpen(false)} className="p-2">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              {cartItems.length > 0 ? (
+                <>
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between py-4 border-b"
+                    >
+                      <div className="flex items-center">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover mr-4"
+                        />
+                        <div>
+                          <h3 className="font-semibold">{item.name}</h3>
+                          <p className="text-gray-600">
+                            ${item.price.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => updateQuantity(item.id, -1)}
+                          className="p-1"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="mx-2">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.id, 1)}
+                          className="p-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center font-semibold">
+                      <span>Total:</span>
+                      <span>${totalPrice.toFixed(2)}</span>
+                    </div>
+                    <button className="w-full bg-black text-white py-2 px-4 rounded mt-4 hover:bg-gray-800 transition-colors">
+                      Checkout
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p>Your cart is empty.</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+          >
+            <div className="bg-white p-4 rounded-lg w-full max-w-2xl mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Search</h2>
+                <button onClick={() => setIsSearchOpen(false)} className="p-2">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="Search for products..."
+                className="w-full p-2 border border-gray-300 rounded"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </TooltipProvider>
   );
 }

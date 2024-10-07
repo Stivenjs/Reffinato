@@ -1,65 +1,138 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
+import { HelpCircle, Shirt, Users, MapPin } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-teal-800 text-white py-8">
+    <footer className="bg-white text-gray-700 py-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">
-              Acerca de Reffinato Beach
-            </h3>
-            <p className="text-sm text-teal-200">
-              Diseños elegantes y cómodos para tu estilo de vida playero.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+            <h2 className="flex items-center text-lg font-semibold mb-4">
+              <HelpCircle className="mr-2" size={20} />
+              Help & Information
+            </h2>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-teal-200 hover:text-white">
-                  FAQ
-                </a>
+                <Link to="/store-policies" className="hover:underline">
+                  Contac Us
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-teal-200 hover:text-white">
-                  Envíos y Devoluciones
-                </a>
+                <Link to="/store-policies" className="hover:underline">
+                  Terms & Conditions
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-teal-200 hover:text-white">
-                  Cuidado de Prendas
-                </a>
+                <Link to="/store-policies" className="hover:underline">
+                  Shipping & Returns
+                </Link>
+              </li>
+              <li>
+                <Link to="/size-guide" className="hover:underline">
+                  Size Guide
+                </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contacto</h3>
-            <p className="text-sm text-teal-200">
-              Email: info@reffinatobeach.com
-            </p>
-            <p className="text-sm text-teal-200">Teléfono: +1 234 567 890</p>
+            <h2 className="flex items-center text-lg font-semibold mb-4">
+              <Shirt className="mr-2" size={20} />
+              Collections
+            </h2>
+            <ul className="space-y-2">
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato Couture
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato Teens
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato Sports
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato Children
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato man
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato ropa
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Reffinato Accessories
+                </Link>
+              </li>
+            </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Suscríbete</h3>
-            <p className="text-sm text-teal-200 mb-2">
-              Recibe nuestras últimas ofertas y novedades.
-            </p>
-            <div className="flex">
-              <Input
-                type="email"
-                placeholder="Tu email"
-                className="rounded-r-none bg-teal-700 text-white placeholder-teal-300 border-teal-600"
-              />
-              <Button className="rounded-l-none bg-orange-500 text-white hover:bg-orange-600">
-                Suscribir
-              </Button>
-            </div>
+            <h2 className="flex items-center text-lg font-semibold mb-4">
+              <Users className="mr-2" size={20} />
+              About Us
+            </h2>
+            <ul className="space-y-2">
+              <li>
+                <Link href="#" className="hover:underline">
+                  Company
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Professional Space
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:underline">
+                  Sustainbility Program
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h2 className="flex items-center text-lg font-semibold mb-4">
+              <MapPin className="mr-2" size={20} />
+              Search You Store
+            </h2>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-teal-700 text-center text-sm text-teal-200">
-          <p>&copy; 2023 Reffinato Beach. Todos los derechos reservados.</p>
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <div className="flex flex-wrap justify-center space-x-4 mb-4">
+            <Link href="#" className="hover:underline">
+              Legal notices
+            </Link>
+            <Link href="#" className="hover:underline">
+              Confidentiality Policy
+            </Link>
+            <Link href="#" className="hover:underline">
+              Acceptance of cookies
+            </Link>
+            <Link href="#" className="hover:underline">
+              General Conditions of Sale
+            </Link>
+            <Link href="#" className="hover:underline">
+              Website map
+            </Link>
+          </div>
+          <p className="text-center text-sm">
+            © {new Date().getFullYear()} REFFINATO
+          </p>
         </div>
       </div>
     </footer>

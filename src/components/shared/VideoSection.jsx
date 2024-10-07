@@ -1,23 +1,18 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const videos = [
   {
-    src: "/placeholder.mp4",
+    src: "https://videos.pexels.com/video-files/27545637/12164137_1920_1080_60fps.mp4",
     phrase: "Descubre la elegancia playera",
-    thumbnail: "/placeholder.svg?height=300&width=300&text=Playa%20Elegante",
   },
   {
-    src: "/placeholder.mp4",
+    src: "https://videos.pexels.com/video-files/28339273/12362445_2560_1440_24fps.mp4",
     phrase: "Vive el verano con estilo",
-    thumbnail: "/placeholder.svg?height=300&width=300&text=Verano%20Estiloso",
   },
   {
-    src: "/placeholder.mp4",
+    src: "https://videos.pexels.com/video-files/26890208/12027365_2560_1440_24fps.mp4",
     phrase: "Siente la brisa del mar",
-    thumbnail: "/placeholder.svg?height=300&width=300&text=Brisa%20Marina",
   },
 ];
 
@@ -31,7 +26,7 @@ export default function VideoSection() {
       if (!isTransitioning) {
         setCurrentVideo((prev) => (prev + 1) % videos.length);
       }
-    }, 5000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [isTransitioning]);
 
@@ -45,9 +40,6 @@ export default function VideoSection() {
       if (video) {
         if (index === currentVideo) {
           video.play();
-        } else {
-          video.pause();
-          video.currentTime = 0;
         }
       }
     });
@@ -73,7 +65,7 @@ export default function VideoSection() {
             muted
             loop
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="absolute inset-0  flex items-center justify-center">
             <motion.h2
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -87,19 +79,6 @@ export default function VideoSection() {
         </motion.div>
       </AnimatePresence>
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:text-teal-100 bg-black/30 hover:bg-black/50 rounded-full"
-          onClick={() =>
-            !isTransitioning &&
-            setCurrentVideo(
-              (prev) => (prev - 1 + videos.length) % videos.length
-            )
-          }
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
         <div className="flex space-x-2">
           {videos.map((_, index) => (
             <button
@@ -113,17 +92,6 @@ export default function VideoSection() {
             />
           ))}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:text-teal-100 bg-black/30 hover:bg-black/50 rounded-full"
-          onClick={() =>
-            !isTransitioning &&
-            setCurrentVideo((prev) => (prev + 1) % videos.length)
-          }
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
       </div>
     </section>
   );

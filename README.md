@@ -19,6 +19,6 @@ Este repositorio contiene el código fuente del frontend para la tienda de ropa 
 1. Clona el repositorio:
 
    ```bash
-   git clone https://github.com/Stivenjs/reffinato-frontend.git
+   git clone https://github.com/Stivenjs/Reffinato.git
    cd reffinato
    npm install 

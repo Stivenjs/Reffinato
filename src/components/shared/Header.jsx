@@ -1,16 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  Search,
-  User,
-  Heart,
-  ShoppingBag,
-  X,
-  Menu,
-  Minus,
-  Plus,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Heart, ShoppingBag, X, Menu, Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -18,13 +8,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import WordRotate from "@/components/ui/word-rotate";
+import UserMenu from "../shared/UserMenu"; 
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -89,16 +74,6 @@ export default function Header() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  const userMenuItems = [
-    { label: "My Orders", href: "/orders" },
-    { label: "My Addresses", href: "/addresses" },
-    { label: "My Wallet", href: "/wallet" },
-    { label: "My Wishlist", href: "/wishlist" },
-    { label: "My Subscriptions", href: "/subscriptions" },
-    { label: "My Account", href: "/account" },
-    { label: "Log Out", href: "/logout" },
-  ];
 
   return (
     <TooltipProvider>
@@ -177,31 +152,7 @@ export default function Header() {
                   <p>Search</p>
                 </TooltipContent>
               </Tooltip>
-              <DropdownMenu>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenuTrigger className="p-2 flex items-center">
-                      <User className="h-5 w-5 mr-1" />
-                      <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Account</p>
-                  </TooltipContent>
-                </Tooltip>
-                <DropdownMenuContent className="w-56">
-                  {userMenuItems.map((item) => (
-                    <DropdownMenuItem key={item.label}>
-                      <Link
-                        to={item.href}
-                        className="w-full block py-2 px-4 hover:bg-gray-100"
-                      >
-                        {item.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="p-2">
@@ -264,16 +215,6 @@ export default function Header() {
                 >
                   <span className="relative z-10">{item.label}</span>
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
-                </Link>
-              ))}
-              {userMenuItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="block py-2 hover:bg-gray-100"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.label}
                 </Link>
               ))}
             </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,24 +12,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Sun, Umbrella, TreePalm, Shirt } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Sun, Umbrella, TreePalm, Shirt, AlertCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const {
+    register: registerForm,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+  const { register, loading, error } = useAuth();
+  const navigate = useNavigate();
+  const [registrationError, setRegistrationError] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(
-      "Register attempt with:",
-      name,
-      email,
-      password,
-      confirmPassword
-    );
+  const onSubmit = async (data) => {
+    const { name, email, password } = data;
+    setRegistrationError(null);
+
+    try {
+      const result = await register(name, email, password);
+      if (result.success) {
+        navigate("/");
+      } else {
+        setRegistrationError(result.error || "Error en el registro");
+      }
+    } catch (err) {
+      console.error("Error registering:", err);
+      setRegistrationError(
+        err.message || "Error en el registro. Por favor, inténtalo de nuevo."
+      );
+    }
   };
 
   const containerVariants = {
@@ -60,6 +76,7 @@ export default function Register() {
         </div>
         <Shirt className="h-24 w-24 mx-auto text-amber-600" />
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -80,7 +97,7 @@ export default function Register() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="name" className="text-amber-700">
@@ -89,11 +106,20 @@ export default function Register() {
                     <Input
                       id="name"
                       placeholder="Your name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
+                      {...registerForm("name", {
+                        required: "Name is required",
+                        minLength: {
+                          value: 2,
+                          message: "Name must be at least 2 characters long",
+                        },
+                      })}
                       className="border-amber-200 focus:border-amber-400 transition-all duration-300 focus:ring focus:ring-amber-100"
                     />
+                    {errors.name && (
+                      <span className="text-red-500">
+                        {errors.name.message}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email" className="text-amber-700">
@@ -103,11 +129,20 @@ export default function Register() {
                       id="email"
                       type="email"
                       placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      {...registerForm("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Invalid email address",
+                        },
+                      })}
                       className="border-amber-200 focus:border-amber-400 transition-all duration-300 focus:ring focus:ring-amber-100"
                     />
+                    {errors.email && (
+                      <span className="text-red-500">
+                        {errors.email.message}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="password" className="text-amber-700">
@@ -116,11 +151,21 @@ export default function Register() {
                     <Input
                       id="password"
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      {...registerForm("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 6,
+                          message:
+                            "Password must be at least 6 characters long",
+                        },
+                      })}
                       className="border-amber-200 focus:border-amber-400 transition-all duration-300 focus:ring focus:ring-amber-100"
                     />
+                    {errors.password && (
+                      <span className="text-red-500">
+                        {errors.password.message}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="confirmPassword" className="text-amber-700">
@@ -129,24 +174,42 @@ export default function Register() {
                     <Input
                       id="confirmPassword"
                       type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
+                      {...registerForm("confirmPassword", {
+                        required: "Confirm your password",
+                        validate: (value) =>
+                          value === watch("password") ||
+                          "Passwords do not match",
+                      })}
                       className="border-amber-200 focus:border-amber-400 transition-all duration-300 focus:ring focus:ring-amber-100"
                     />
+                    {errors.confirmPassword && (
+                      <span className="text-red-500">
+                        {errors.confirmPassword.message}
+                      </span>
+                    )}
                   </div>
                 </div>
+                {(error || registrationError) && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                      {error || registrationError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <Button
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white transition-all duration-300 transform hover:scale-105 mt-4"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? "Registering..." : "Register"}
+                </Button>
               </form>
             </CardContent>
             <CardFooter className="flex flex-col">
-              <Button
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white transition-all duration-300 transform hover:scale-105"
-                onClick={handleSubmit}
-              >
-                Register
-              </Button>
               <p className="mt-4 text-sm text-center text-amber-700">
-                Already have an account?
+                Already have an account?{" "}
                 <Link
                   to="/login"
                   className="text-amber-600 hover:underline ml-1 transition-colors duration-200"

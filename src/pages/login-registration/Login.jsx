@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,16 +12,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Waves, Sun, Umbrella, ShoppingBag } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Waves,
+  Sun,
+  Umbrella,
+  ShoppingBag,
+  AlertCircle,
+  Facebook,
+  Mail,
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { useFacebookAuth } from "@/hooks/useFacebookAuth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import useAuthStore from "@/store/authStore";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm();
+  const { login, loading, error } = useAuth();
+  const {
+    loginWithGoogle,
+    loading: googleLoading,
+    error: googleError,
+  } = useGoogleAuth();
+  const {
+    loginWithFacebook,
+    loading: facebookLoading,
+    error: facebookError,
+  } = useFacebookAuth();
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login attempt with:", email, password);
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  const onSubmit = async (data) => {
+    console.log("Login attempt with:", data.email, data.password);
+    await login(data.email, data.password);
   };
 
   const containerVariants = {
@@ -72,7 +108,7 @@ export default function Login() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email" className="text-blue-600">
@@ -82,11 +118,16 @@ export default function Login() {
                       id="email"
                       type="email"
                       placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="border-blue-200 focus:border-blue-400 transition-all duration-300 focus:ring focus:ring-blue-200"
+                      {...register("email", { required: "Email is required" })}
+                      className={`border-blue-200 focus:border-blue-400 transition-all duration-300 focus:ring focus:ring-blue-200 ${
+                        errors.email ? "border-red-500" : ""
+                      }`}
                     />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="password" className="text-blue-600">
@@ -95,24 +136,75 @@ export default function Login() {
                     <Input
                       id="password"
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="border-blue-200 focus:border-blue-400 transition-all duration-300 focus:ring focus:ring-blue-200"
+                      {...register("password", {
+                        required: "Password is required",
+                      })}
+                      className={`border-blue-200 focus:border-blue-400 transition-all duration-300 focus:ring focus:ring-blue-200 ${
+                        errors.password ? "border-red-500" : ""
+                      }`}
                     />
+                    {errors.password && (
+                      <p className="text-red-500 text-sm">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
                 </div>
+                <Button
+                  className="w-full bg-blue-400 hover:bg-blue-500 text-white transition-all duration-300 transform hover:scale-105 mt-4"
+                  type="submit"
+                  disabled={loading || isSubmitting}
+                >
+                  {loading ? "Logging In..." : "Log In"}
+                </Button>
               </form>
             </CardContent>
+            {error && (
+              <div className="mx-6">
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              </div>
+            )}
             <CardFooter className="flex flex-col">
-              <Button
-                className="w-full bg-blue-400 hover:bg-blue-500 text-white transition-all duration-300 transform hover:scale-105"
-                onClick={handleSubmit}
-              >
-                Log In
-              </Button>
+              <div className="flex justify-center space-x-4 mt-4">
+                <Button
+                  variant="outline"
+                  className="flex items-center space-x-2 bg-white hover:bg-gray-100"
+                  onClick={loginWithGoogle}
+                  disabled={googleLoading}
+                >
+                  <Mail className="h-5 w-5 text-red-500" />
+                  <span>Google</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center space-x-2 bg-white hover:bg-gray-100"
+                  onClick={loginWithFacebook}
+                  disabled={facebookLoading}
+                >
+                  <Facebook className="h-5 w-5 text-blue-600" />
+                  <span>Facebook</span>
+                </Button>
+              </div>
+              {googleError && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{googleError}</AlertDescription>
+                </Alert>
+              )}
+              {facebookError && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{facebookError}</AlertDescription>
+                </Alert>
+              )}
               <p className="mt-4 text-sm text-center text-blue-600">
-                Don&apos;t have an account?
+                Don't have an account?
                 <Link
                   to="/register"
                   className="text-blue-500 hover:underline ml-1 transition-colors duration-200"
@@ -121,7 +213,7 @@ export default function Login() {
                 </Link>
               </p>
               <p className="mt-4 text-sm text-center text-blue-600">
-                Forgot your password?
+                Forgot your password?{" "}
                 <Link
                   to="/reset-password"
                   className="text-blue-500 hover:underline ml-1 transition-colors duration-200"

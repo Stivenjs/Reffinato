@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { sendPasswordResetEmail, getAuth } from "firebase/auth";
+import { auth } from "../../services/credentials";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,13 +15,32 @@ import {
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Waves, Sun, Umbrella, Lock } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Reset password attempt for:", email);
+    setLoading(true);
+    setMessage(null);
+    setError(null);
+
+    const auth = getAuth();
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMessage("Instructions sent! Please check your email.");
+    } catch (err) {
+      console.error("Error sending reset email:", err);
+      setError("Failed to send instructions. Please try again.");
+    } finally {
+      setLoading(false);
+      setEmail("");
+    }
   };
 
   const containerVariants = {
@@ -96,14 +117,29 @@ export default function ResetPassword() {
               <Button
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white transition-all duration-300 transform hover:scale-105"
                 onClick={handleSubmit}
+                disabled={loading}
               >
-                Send Instructions
+                {loading ? "Sending..." : "Send Instructions"}
               </Button>
+
+              {message && (
+                <Alert className="mt-4 bg-green-50 border-green-200">
+                  <AlertTitle>Success</AlertTitle>
+                  <AlertDescription>{message}</AlertDescription>
+                </Alert>
+              )}
+              {error && (
+                <Alert className="mt-4 bg-red-50 border-red-200">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <div className="mt-4 text-sm text-center space-y-2">
                 <p className="text-teal-700">
                   Remembered your password?
                   <Link
-                    to="/"
+                    to="/login"
                     className="text-teal-600 hover:underline ml-1 transition-colors duration-200"
                   >
                     Log in here

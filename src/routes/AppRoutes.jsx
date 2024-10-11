@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { Toaster } from "../components/ui/toaster";
 import Login from "@/pages/login-registration/Login";
 import Register from "@/pages/login-registration/Register";
 import ResetPassword from "@/pages/password-reset/ResetPassword";
@@ -13,6 +14,7 @@ import NewsLetter from "../components/shared/NewsLetter";
 import StorePolicies from "../components/shared/StorePolicies";
 import ScrollToTop from "../components/shared/ScrollToTop";
 import SizeGuide from "../components/shared/SizeGuide";
+import UpdateProfile from "../pages/preferences-orders/UpdateProfile";
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -42,7 +44,12 @@ function AppRoutes() {
         <Route path="/reffinato-gold" element={<RefinnatoGold />} />
         <Route path="/store-policies" element={<StorePolicies />} />
         <Route path="/size-guide" element={<SizeGuide />} />
+        <Route
+          path="/preferences-orders/update-profile"
+          element={<UpdateProfile />}
+        />
       </Routes>
+      {!isAuthRoute && <Toaster />}
       {!isAuthRoute && <NewsLetter />}
       {!isAuthRoute && <Footer />}
     </>

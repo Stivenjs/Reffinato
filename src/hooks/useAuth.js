@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/credentials";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../instances/axiosInstance";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 
@@ -8,19 +10,17 @@ export const useAuth = () => {
   const setUser = useAuthStore((state) => state.setUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const register = async (name, email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
-        {
-          displayName: name,
-          email,
-          password,
-        }
-      );
+      const response = await axiosInstance.post("/api/auth/register", {
+        displayName: name,
+        email,
+        password,
+      });
 
       const { user, token } = response.data;
       setUser({ ...user, token });
@@ -99,6 +99,7 @@ export const useAuth = () => {
       setUser(null);
       localStorage.removeItem("token");
       setLoading(false);
+      navigate("/login");
       return { success: true };
     } catch (err) {
       setError("Error al cerrar sesión");

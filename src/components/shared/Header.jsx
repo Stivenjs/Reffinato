@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import WordRotate from "@/components/ui/word-rotate";
-import UserMenu from "../shared/UserMenu"; 
+import UserMenu from "../shared/UserMenu";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);

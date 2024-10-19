@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,12 +12,13 @@ import { useAuth } from "@/hooks/useAuth";
 import useAuthStore from "@/store/authStore";
 
 const userMenuItems = [
-  { label: "My Orders", to: "/orders" },
-  { label: "My Addresses", to: "/addresses" },
-  { label: "My Wallet", to: "/wallet" },
-  { label: "My Wishlist", to: "/wishlist" },
-  { label: "My Subscriptions", to: "/subscriptions" },
-  { label: "My Account", to: "/preferences-orders/update-profile" },
+  { label: "My Orders", to: "/profile", query: "section=orders" },
+  { label: "My Addresses", to: "/profile", query: "section=addresses" },
+  { label: "My Wallet", to: "/profile", query: "section=wallet" },
+  { label: "My Wishlist", to: "/profile", query: "section=wishlist" },
+  { label: "My Subscriptions", to: "/profile", query: "section=subscriptions" },
+  { label: "My Account", to: "/profile", query: "section=account" },
+  { label: "Admin Panel", to: "/admin/add-product" },
 ];
 
 export default function UserMenu() {
@@ -25,6 +26,8 @@ export default function UserMenu() {
   const [isMobile, setIsMobile] = useState(false);
   const { user } = useAuthStore();
   const { logout } = useAuth();
+  const navigate = useNavigate();
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -32,7 +35,19 @@ export default function UserMenu() {
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const getInitials = (name) => {
@@ -45,8 +60,13 @@ export default function UserMenu() {
 
   const userInitial = user?.displayName ? getInitials(user.displayName) : "?";
 
+  const handleMenuItemClick = (to, query) => {
+    navigate(`${to}?${query}`);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -112,14 +132,13 @@ export default function UserMenu() {
             </div>
             <div className="py-1">
               {userMenuItems.map((item) => (
-                <Link
+                <button
                   key={item.label}
-                  to={item.to}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => handleMenuItemClick(item.to, item.query)}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   {item.label}
-                </Link>
+                </button>
               ))}
               <button
                 onClick={() => {

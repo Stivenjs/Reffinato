@@ -1,40 +1,7 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import BlurFade from "@/components/ui/blur-fade";
-const products = [
-  {
-    id: 1,
-    name: "BLOUSON",
-    brand: "KEYSTONE Crudo",
-    price: 107.0,
-    images: [
-      "https://picsum.photos/seed/1/800/600",
-      "https://picsum.photos/seed/2/800/600",
-    ],
-  },
-  {
-    id: 2,
-    name: "PANTALÓN",
-    brand: "KEYSTONE Crudo",
-    price: 90.0,
-    images: [
-      "https://picsum.photos/seed/3/600/800",
-      "https://picsum.photos/seed/4/600/800",
-    ],
-  },
-  {
-    id: 3,
-    name: "POLAR",
-    brand: "DEERVALLEY Crudo",
-    price: 126.0,
-    images: [
-      "https://picsum.photos/seed/5/800/600",
-      "https://picsum.photos/seed/6/800/600",
-    ],
-  },
-];
-
-const tabs = ["Ropa", "Novedades", "Homewear", "Best Sellers"];
 
 function ProductCard({ product, index }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -49,18 +16,22 @@ function ProductCard({ product, index }) {
         >
           <div className="relative">
             <img
-              src={isHovered ? product.images[1] : product.images[0]}
+              src={isHovered ? product.photos[0] : product.photos[1]}
               alt={`${product.name} - ${
                 isHovered ? "Imagen alternativa" : "Imagen principal"
               }`}
-              className="w-full h-96 object-cover transition-opacity duration-300"
+              className="w-full h-60 md:h-72 lg:h-96 object-cover transition-opacity duration-300"
             />
           </div>
           <div className="p-4">
-            <h2 className="text-lg font-semibold">{product.name}</h2>
-            <p className="text-gray-600">{product.brand}</p>
-            <p className="text-lg font-bold mt-2">
-              {product.price.toFixed(2)} €
+            <h2 className="text-base md:text-lg lg:text-xl font-semibold">
+              {product.name}
+            </h2>
+            <p className="text-sm md:text-base text-gray-600">
+              {product.color}
+            </p>
+            <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
+              {product.price} $
             </p>
           </div>
         </div>
@@ -71,16 +42,41 @@ function ProductCard({ product, index }) {
 
 export default function Products() {
   const [activeTab, setActiveTab] = useState(0);
+  const categories = ["Bikini", "Swimsuits", "Beachwear"];
+  const selectedCategory = categories[activeTab];
+  const location = useLocation();
+
+  useEffect(() => {
+    const categoryFromState = location.state?.category;
+    if (categoryFromState) {
+      const index = categories.indexOf(categoryFromState);
+      if (index !== -1) {
+        setActiveTab(index);
+      }
+    }
+  }, [location]);
+  // Usa el hook para obtener productos de la categoría activa
+  const {
+    data: products,
+    isLoading,
+    error,
+  } = useProductsByCategory(selectedCategory);
+
+  // Manejo de carga y errores
+  if (isLoading) return <p>Cargando productos...</p>;
+  if (error) return <p>Error al cargar productos: {error.message}</p>;
 
   return (
-    <div className="container mx-auto px-4 mt-32">
-      <h1 className="text-3xl font-bold text-center my-8">Shop</h1>
+    <div className="container mx-auto px-4 mt-24 md:mt-32 lg:mt-48">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center my-8">
+        Shop
+      </h1>
       <div className="mb-8">
-        <ul className="flex space-x-4 border-b" role="tablist">
-          {tabs.map((tab, index) => (
+        <ul className="flex space-x-2 md:space-x-4 border-b" role="tablist">
+          {categories.map((tab, index) => (
             <li key={tab} role="presentation">
               <button
-                className={`px-4 py-2 font-medium ${
+                className={`px-2 md:px-4 py-2 font-medium ${
                   activeTab === index ? "border-b-2 border-black" : ""
                 }`}
                 onClick={() => setActiveTab(index)}
@@ -96,7 +92,7 @@ export default function Products() {
         </ul>
       </div>
       <div>
-        {tabs.map((tab, index) => (
+        {categories.map((tab, index) => (
           <div
             key={tab}
             role="tabpanel"
@@ -104,8 +100,8 @@ export default function Products() {
             aria-labelledby={`tab-${index}`}
             hidden={activeTab !== index}
           >
-            {index === 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {activeTab === index ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                 {products.map((product, productIndex) => (
                   <ProductCard
                     key={product.id}

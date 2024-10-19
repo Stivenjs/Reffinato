@@ -1,15 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Bell } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-const sizes = [
-  { value: "XS", label: "XS" },
-  { value: "S", label: "S" },
-  { value: "M", label: "M" },
-  { value: "L", label: "L", notifyMe: true },
-  { value: "XL", label: "XL" },
-];
-
-export default function SizeSelector({ onSizeChange }) {
+export default function SizeSelector({ onSizeChange, sizes = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
 
@@ -18,6 +10,10 @@ export default function SizeSelector({ onSizeChange }) {
     onSizeChange(size);
     setIsOpen(false);
   };
+
+  if (sizes.length === 0) {
+    return <div>No hay tallas disponibles</div>;
+  }
 
   return (
     <div className="relative w-full max-w-xs">
@@ -34,26 +30,17 @@ export default function SizeSelector({ onSizeChange }) {
         </div>
         {isOpen && (
           <ul className="absolute z-10 w-full bg-white border border-gray-300 border-t-0 rounded-b-md shadow-lg">
-            {sizes.map((size) => (
+            {sizes.map((size, index) => (
               <li
-                key={size.value}
+                key={index}
                 className={`p-2 cursor-pointer flex items-center justify-between ${
-                  selectedSize === size.value
-                    ? "bg-teal-600"
+                  selectedSize === size
+                    ? "bg-teal-600 text-white"
                     : "hover:bg-gray-200"
                 }`}
-                onClick={() => handleSizeSelect(size.value)}
+                onClick={() => handleSizeSelect(size)}
               >
-                <span>{size.label}</span>
-                {size.notifyMe && (
-                  <button
-                    onClick={(e) => handleNotifyMe(e, size.value)}
-                    className="text-gray-600 hover:text-gray-800 focus:outline-none"
-                  >
-                    <Bell size={16} />
-                    <span className="sr-only">Notificarme</span>
-                  </button>
-                )}
+                <span>{size.toUpperCase()}</span>
               </li>
             ))}
           </ul>

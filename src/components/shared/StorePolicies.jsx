@@ -64,7 +64,7 @@ export default function StorePolicies() {
   const selectedContent = policies.find((p) => p.id === selectedPolicy);
 
   return (
-    <div className="flex flex-col md:flex-row max-w-4xl mx-auto p-4 gap-8 mt-32">
+    <div className="flex flex-col md:flex-row max-w-4xl mx-auto p-4 gap-8 mt-44">
       <nav className="md:w-1/4">
         <h2 className="text-lg font-semibold mb-4 pb-2 border-b">
           Store Policies

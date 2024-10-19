@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
+import { useSearchParams } from "react-router-dom";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import Sidebar from "./components/SideBar";
 import AccountContent from "./components/AccountContent";
@@ -12,6 +12,7 @@ import MySubscriptions from "./components/MySubscriptions";
 import CustomAlert from "@/components/shared/CustomAlert";
 
 export default function UpdateProfile() {
+  const [searchParams] = useSearchParams();
   const {
     register,
     handleSubmit,
@@ -20,9 +21,18 @@ export default function UpdateProfile() {
   } = useForm();
   const { updatePersonalInfo, updateSecurityInfo } = useUpdateProfile();
   const [isUpdateAlertOpen, setIsUpdateAlertOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState("account");
+  const [selectedSection, setSelectedSection] = useState(
+    searchParams.get("section") || "account"
+  );
   const [formData, setFormData] = useState(null);
   const [isSecurityUpdate, setIsSecurityUpdate] = useState(false);
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section) {
+      setSelectedSection(section);
+    }
+  }, [searchParams]);
 
   const onSubmit = (data) => {
     setFormData(data);
@@ -53,12 +63,6 @@ export default function UpdateProfile() {
         setFormData(null);
       } catch (error) {
         console.error("Error updating profile:", error);
-        toast({
-          title: "Update Failed",
-          description:
-            "There was an error updating your information. Please try again.",
-          variant: "destructive",
-        });
       }
     }
   };
@@ -95,7 +99,9 @@ export default function UpdateProfile() {
           selectedSection={selectedSection}
           setSelectedSection={setSelectedSection}
         />
-        <main className="flex-1">{renderContent()}</main>
+        <main className="flex-1">
+          <div id={selectedSection}>{renderContent()}</div>
+        </main>
       </div>
       <CustomAlert
         isOpen={isUpdateAlertOpen}

@@ -8,13 +8,16 @@ import Home from "@/pages/home/Home";
 import Products from "@/components/shared/Products";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
-import ProductsDetails from "../components/shared/ProductsDetails";
-import RefinnatoGold from "../components/shared/ReffinatoGold";
-import NewsLetter from "../components/shared/NewsLetter";
-import StorePolicies from "../components/shared/StorePolicies";
-import ScrollToTop from "../components/shared/ScrollToTop";
-import SizeGuide from "../components/shared/SizeGuide";
-import UpdateProfile from "../pages/preferences-orders/UpdateProfile";
+import ProductsDetails from "@/components/shared/ProductsDetails";
+import RefinnatoGold from "@/components/shared/ReffinatoGold";
+import NewsLetter from "@/components/shared/NewsLetter";
+import StorePolicies from "@/components/shared/StorePolicies";
+import ScrollToTop from "@/components/shared/ScrollToTop";
+import SizeGuide from "@/components/shared/SizeGuide";
+import UpdateProfile from "@/pages/preferences-orders/UpdateProfile";
+import ShoppingCart from "@/components/shared/ShoppingCart";
+import CheckoutPage from "../pages/checkout/CheckoutPage";
+import AdminProductForm from "@/pages/admin/AdminProductForm";
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -44,10 +47,10 @@ function AppRoutes() {
         <Route path="/reffinato-gold" element={<RefinnatoGold />} />
         <Route path="/store-policies" element={<StorePolicies />} />
         <Route path="/size-guide" element={<SizeGuide />} />
-        <Route
-          path="/preferences-orders/update-profile"
-          element={<UpdateProfile />}
-        />
+        <Route path="/profile" element={<UpdateProfile />} />
+        <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/admin/add-product" element={<AdminProductForm />} />
       </Routes>
       {!isAuthRoute && <Toaster />}
       {!isAuthRoute && <NewsLetter />}

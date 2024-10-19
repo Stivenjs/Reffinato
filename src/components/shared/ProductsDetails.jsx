@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ChevronDown,
@@ -9,59 +8,16 @@ import {
   Twitter,
   Instagram,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import SizeSelector from "./SizeSelector";
-const products = [
-  {
-    id: 1,
-    name: "BLOUSON",
-    brand: "KEYSTONE Crudo",
-    price: 107.0,
-    images: [
-      "https://picsum.photos/seed/1/800/600",
-      "https://picsum.photos/seed/2/800/600",
-    ],
-    description:
-      "Un blouson elegante y versátil, perfecto para cualquier ocasión.",
-    details:
-      "• Material: 100% algodón\n• Cierre frontal con cremallera\n• Bolsillos laterales\n• Puños y cintura elásticos",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-  {
-    id: 2,
-    name: "PANTALÓN",
-    brand: "KEYSTONE Crudo",
-    price: 90.0,
-    images: [
-      "https://picsum.photos/seed/3/600/800",
-      "https://picsum.photos/seed/4/600/800",
-    ],
-    description: "Pantalón cómodo y estilizado, ideal para el día a día.",
-    details:
-      "• Material: 98% algodón, 2% elastano\n• Cierre con botón y cremallera\n• Bolsillos frontales y traseros\n• Corte recto",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-  {
-    id: 3,
-    name: "POLAR",
-    brand: "DEERVALLEY Crudo",
-    price: 126.0,
-    images: [
-      "https://picsum.photos/seed/5/800/600",
-      "https://picsum.photos/seed/6/800/600",
-    ],
-    description: "Polar cálido y confortable, perfecto para los días fríos.",
-    details:
-      "• Material: 100% poliéster\n• Cierre frontal con cremallera\n• Bolsillos laterales con cremallera\n• Puños elásticos",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-];
+import useCartStore from "@/store/cartStore";
+import { useProductById } from "@/hooks/fetchProductById";
+import { useEffect, useState } from "react";
 
 export default function ProductDetails() {
+  const { addToCart } = useCartStore();
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const { data: product, isLoading, isError } = useProductById(id);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
@@ -69,18 +25,21 @@ export default function ProductDetails() {
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [openSection, setOpenSection] = useState(null);
+  const { toast } = useToast();
 
+  // Manejar el estado de la imagen principal
   useEffect(() => {
-    const productId = parseInt(id);
-    const foundProduct = products.find((p) => p.id === productId);
-    setProduct(foundProduct);
-    if (foundProduct) {
-      setMainImage(foundProduct.images[0]);
+    if (product) {
+      setMainImage(product.photos[0]);
     }
-  }, [id]);
+  }, [product]);
 
-  if (!product) {
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading product</div>;
   }
 
   const handleImageClick = (image) => {
@@ -104,12 +63,25 @@ export default function ProductDetails() {
     setOpenSection(openSection === section ? null : section);
   };
 
+  const handleAddToCart = () => {
+    if (selectedSize) {
+      addToCart(product, selectedSize, quantity);
+      toast({
+        title: "Added to cart",
+        description: `${quantity} ${product.name} (Size: ${selectedSize}) added to cart`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a size before adding to cart",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-15 md:px-8 lg:px-16 py-20 mt-24">
-      <Link
-        to="/products"
-        className="text-teal-800 hover:underline mb-4 inline-block"
-      >
+      <Link to="/products" className="hover:underline mb-4 inline-block">
         &larr; Back to products
       </Link>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -132,7 +104,7 @@ export default function ProductDetails() {
             />
           </div>
           <div className="mt-4 flex space-x-2 overflow-x-auto">
-            {product.images.map((img, index) => (
+            {product.photos.map((img, index) => (
               <img
                 key={index}
                 src={img}
@@ -146,13 +118,16 @@ export default function ProductDetails() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
           <p className="text-lg md:text-xl text-gray-600 mt-2">
-            {product.brand}
+            {product.color}
           </p>
           <p className="text-xl md:text-2xl font-bold mt-4">
-            {product.price.toFixed(2)} €
+            {product.price} $
           </p>
           <div className="mt-6">
-            <SizeSelector onSizeChange={setSelectedSize} />
+            <SizeSelector
+              sizes={product.sizes}
+              onSizeChange={setSelectedSize}
+            />
           </div>
           <div className="mt-6">
             <label
@@ -170,11 +145,14 @@ export default function ProductDetails() {
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-800 focus:border-teal-800 sm:text-sm"
             />
           </div>
-          <button className="mt-8 w-full bg-teal-800 border border-transparent py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+          <button
+            className="mt-8 w-full bg-[#a0501a] border border-transparent py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-[#8b4513] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-[#8b4513]"
+            onClick={handleAddToCart}
+          >
             Add to cart
           </button>
           <div className="mt-6 flex items-center justify-between">
-            <button className="text-teal-800 hover:text-teal-800">
+            <button className="hover:text-[#8b4513]">
               <Heart className="h-6 w-6" />
             </button>
             <div className="relative">
@@ -223,12 +201,12 @@ export default function ProductDetails() {
               )}
             </button>
             {openSection === "description" && (
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-4 text-sm text-gray-700">
                 {product.description}
               </p>
             )}
           </div>
-          <div className="mt-4 border-t pt-8">
+          <div className="mt-8 border-t pt-8">
             <button
               className="flex items-center justify-between w-full"
               onClick={() => toggleSection("details")}
@@ -241,28 +219,8 @@ export default function ProductDetails() {
               )}
             </button>
             {openSection === "details" && (
-              <p className="mt-4 text-sm text-gray-500 whitespace-pre-line">
-                {product.details}
-              </p>
-            )}
-          </div>
-          <div className="mt-4 border-t pt-8">
-            <button
-              className="flex items-center justify-between w-full"
-              onClick={() => toggleSection("deliveryReturns")}
-            >
-              <span className="text-sm font-medium text-gray-900">
-                Delivery and returns
-              </span>
-              {openSection === "deliveryReturns" ? (
-                <ChevronUp className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {openSection === "deliveryReturns" && (
-              <p className="mt-4 text-sm text-gray-500 whitespace-pre-line">
-                {product.deliveryReturns}
+              <p className="mt-4 text-sm text-gray-700">
+                {product.description}
               </p>
             )}
           </div>

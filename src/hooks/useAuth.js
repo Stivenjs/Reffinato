@@ -1,9 +1,12 @@
-import { useState } from "react";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/credentials";
+import { useState } from "react";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithCustomToken,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../instances/axiosInstance";
-import axios from "axios";
 import useAuthStore from "@/store/authStore";
 
 export const useAuth = () => {
@@ -16,28 +19,32 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.post("/api/auth/register", {
+      // Registrar usuario en el backend
+      const response = await axiosInstance.post("/register", {
         displayName: name,
         email,
         password,
       });
 
-      const { user, token } = response.data;
-      setUser({ ...user, token });
-      console.log("Usuario registrado:", { ...user, token });
-      localStorage.setItem("token", token);
+      const { token, user } = response.data;
+
+      // Iniciar sesión con el token personalizado
+      const auth = getAuth();
+      const userCredential = await signInWithCustomToken(auth, token);
+      const firebaseUser = userCredential.user;
+
+      // Obtener un token fresco
+      const idToken = await firebaseUser.getIdToken(true);
+
+      setUser({ ...user, ...firebaseUser, token: idToken });
+      localStorage.setItem("token", idToken);
 
       setLoading(false);
-
+      navigate("/");
       return { success: true };
     } catch (err) {
       console.error("Error al registrar:", err);
-
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Registration error");
-      } else {
-        setError("Unexpected error during registration");
-      }
+      setError(err.response?.data?.message || "Error durante el registro");
       setLoading(false);
       return { success: false, error: error };
     }
@@ -57,7 +64,6 @@ export const useAuth = () => {
       const token = await user.getIdToken();
 
       setUser({ ...user, token });
-      console.log("Usuario logueado:", { ...user, token });
       localStorage.setItem("token", token);
 
       setLoading(false);

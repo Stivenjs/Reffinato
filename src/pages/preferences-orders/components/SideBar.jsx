@@ -20,12 +20,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/authStore";
 
-export default function Sidebar({
-  firstName,
-  lastName,
-  selectedSection,
-  setSelectedSection,
-}) {
+export default function Sidebar({ selectedSection, setSelectedSection }) {
   const [isHovering, setIsHovering] = useState(false);
   const { user } = useAuthStore();
   const handleAvatarChange = () => {

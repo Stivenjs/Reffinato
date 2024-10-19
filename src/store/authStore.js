@@ -9,8 +9,8 @@ const useAuthStore = create(
       clearUser: () => set({ user: null }),
     }),
     {
-      name: "auth-store", 
-      getStorage: () => localStorage, 
+      name: "auth-store",
+      getStorage: () => localStorage,
     }
   )
 );

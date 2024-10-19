@@ -36,7 +36,6 @@ export default function AccountContent({
     const { name, value } = e.target;
     setSecurityForm({ ...securityForm, [name]: value });
 
-    // Clear errors when user starts typing
     setSecurityErrors({ ...securityErrors, [name]: "", general: "" });
   };
 
@@ -143,12 +142,9 @@ export default function AccountContent({
                   )}
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" type="tel" {...register("phone")} />
-              </div>
+
               <CardFooter className="flex flex-col sm:flex-row justify-between gap-4">
-                <Button type="submit" className="w-full sm:w-auto bg-teal-800">
+                <Button type="submit" className="w-full sm:w-auto bg-[#a0501a]">
                   Update Info
                 </Button>
               </CardFooter>
@@ -200,7 +196,7 @@ export default function AccountContent({
               <CardFooter className="flex flex-col sm:flex-row justify-between gap-4">
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto bg-teal-800"
+                  className="w-full sm:w-auto bg-[#a0501a]"
                   disabled={loading}
                 >
                   {loading ? "Updating..." : "Update Security"}

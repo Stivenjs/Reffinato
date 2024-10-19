@@ -14,7 +14,7 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="bg-teal-500 text-white py-12 px-4">
+    <section className="bg-[#a0501a] text-white py-12 px-4">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="text-3xl font-bold mb-4">Join Reffinato Community</h2>
         <p className="mb-6">
@@ -26,7 +26,7 @@ export default function Newsletter() {
             placeholder="Tu email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-grow mr-2 text-black"
+            className="flex-grow mr-2 text-white"
             required
           />
           <Button type="submit" className="bg-gray-900 hover:bg-gray-800">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
+import { Loader2 } from "lucide-react";
 import BlurFade from "@/components/ui/blur-fade";
 
 function ProductCard({ product, index }) {
@@ -63,8 +64,17 @@ export default function Products() {
   } = useProductsByCategory(selectedCategory);
 
   // Manejo de carga y errores
-  if (isLoading) return <p>Cargando productos...</p>;
-  if (error) return <p>Error al cargar productos: {error.message}</p>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p>Error al cargar productos: {error.message}</p>;
+  }
 
   return (
     <div className="container mx-auto px-4 mt-24 md:mt-32 lg:mt-48">

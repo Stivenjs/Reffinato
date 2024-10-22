@@ -16,7 +16,7 @@ const useSendData = () => {
     setLoading(true);
     setError(null);
 
-    // Verifica si hay un usuario autenticado
+    // Verifica si hay un usuario autenticado 
     if (!user) {
       toast({
         title: "Error",

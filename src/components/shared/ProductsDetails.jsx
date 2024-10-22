@@ -4,18 +4,22 @@ import {
   ChevronUp,
   Heart,
   Share2,
+  Loader2,
   Facebook,
   Twitter,
   Instagram,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import { useProductById } from "@/hooks/fetchProductById";
+import useFavoritesStore from "@/store/favoriteStore";
 import SizeSelector from "./SizeSelector";
 import useCartStore from "@/store/cartStore";
-import { useProductById } from "@/hooks/fetchProductById";
-import { useEffect, useState } from "react";
 
 export default function ProductDetails() {
   const { addToCart } = useCartStore();
+  const { addToFavorites, removeFromFavorites, isFavorite } =
+    useFavoritesStore();
   const { id } = useParams();
   const { data: product, isLoading, isError } = useProductById(id);
   const [selectedSize, setSelectedSize] = useState("");
@@ -35,7 +39,11 @@ export default function ProductDetails() {
   }, [product]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (isError) {
@@ -76,6 +84,14 @@ export default function ProductDetails() {
         title: "Error",
         description: "Please select a size before adding to cart",
       });
+    }
+  };
+
+  const handleFavoriteClick = () => {
+    if (isFavorite(product.id)) {
+      removeFromFavorites(product.id);
+    } else {
+      addToFavorites(product);
     }
   };
 
@@ -152,12 +168,16 @@ export default function ProductDetails() {
             Add to cart
           </button>
           <div className="mt-6 flex items-center justify-between">
-            <button className="hover:text-[#8b4513]">
-              <Heart className="h-6 w-6" />
+            <button onClick={handleFavoriteClick}>
+              <Heart
+                className={`h-6 w-6 ${
+                  isFavorite(product.id) ? "fill-[#a0501a]" : ""
+                }`}
+              />
             </button>
             <div className="relative">
               <button
-                className="text-teal-800 hover:text-teal-800"
+                className="hover:text-[#8b4513]"
                 onClick={toggleShareMenu}
               >
                 <Share2 className="h-6 w-6" />

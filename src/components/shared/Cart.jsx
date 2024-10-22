@@ -11,7 +11,7 @@ const CartItem = ({
   removeFromCart,
   handleImageClick,
 }) => {
-  console.log("Cart Item:", item); // Agrega esta línea para depurar
+  console.log("Cart Item:", item);
   return (
     <div className="flex items-center justify-between py-4 border-b">
       <div className="flex items-center">
@@ -19,7 +19,7 @@ const CartItem = ({
           src={item.photos[0]}
           alt={item.name}
           className="w-20 h-20 object-cover mr-4 cursor-pointer"
-          onClick={(e) => handleImageClick(e, item.product_id)} // Asegúrate que `productId` es el correcto
+          onClick={(e) => handleImageClick(e, item.product_id)}
         />
         <div>
           <h3 className="font-semibold">{item.name}</h3>

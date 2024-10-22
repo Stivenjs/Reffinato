@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook } from "react-icons/fa";
 import {
   Card,
   CardContent,
@@ -13,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertCircle, Facebook, Mail } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useFacebookAuth } from "@/hooks/useFacebookAuth";
@@ -193,7 +195,7 @@ export default function Login() {
                     onClick={loginWithGoogle}
                     disabled={googleLoading}
                   >
-                    <Mail className="h-5 w-5 text-red-500" />
+                    <FcGoogle className="h-5 w-5" />
                     <span>Google</span>
                   </Button>
                   <Button
@@ -202,7 +204,7 @@ export default function Login() {
                     onClick={loginWithFacebook}
                     disabled={facebookLoading}
                   >
-                    <Facebook className="h-5 w-5 text-blue-600" />
+                    <FaFacebook className="h-5 w-5 text-blue-600" />
                     <span>Facebook</span>
                   </Button>
                 </div>

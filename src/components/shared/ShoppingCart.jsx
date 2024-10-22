@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Trash2,
   ChevronDown,
@@ -13,6 +13,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useOrderSubmission } from "@/hooks/useOrderSubmission";
+import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
 
 export default function ShoppingCarts() {
@@ -23,31 +25,47 @@ export default function ShoppingCarts() {
   const [payerName, setPayerName] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuthStore();
+  const { submitOrder, isSubmitting, error } = useOrderSubmission();
+
   const total = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  console.log(cartItems);
-  const handlePaymentSuccess = (details) => {
-    setPaymentComplete(true);
-    clearCart();
-    setPayerName(details.payer.name.given_name);
-    setShowAlert(true);
+
+  const handlePaymentSuccess = async (details) => {
+    const userId = user.uid;
+    const order = await submitOrder(userId, cartItems, total);
+
+    if (order) {
+      setPaymentComplete(true);
+      clearCart();
+      setPayerName(details.payer.name.given_name);
+      setShowAlert(true);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Order Creation Failed",
+        description:
+          error ||
+          "There was an error creating your order. Please contact support.",
+      });
+    }
   };
 
   const handlePaymentError = (error) => {
     console.error("Error en la transacción:", error);
     toast({
       variant: "destructive",
-      title: "Error en el pago",
+      title: "Payment error",
       description:
-        "Ha ocurrido un error al procesar su pago. Por favor, inténtelo de nuevo.",
+        "An error occurred while processing your payment. Please try again.",
     });
   };
 
   const handleCloseAlert = () => {
     setShowAlert(false);
-    navigate("/");
+    navigate("/profile?section=orders");
   };
 
   if (cartItems.length === 0 && !showAlert) {

@@ -14,8 +14,7 @@ import useAuthStore from "@/store/authStore";
 const userMenuItems = [
   { label: "My Orders", to: "/profile", query: "section=orders" },
   { label: "My Addresses", to: "/profile", query: "section=addresses" },
-  { label: "My Wallet", to: "/profile", query: "section=wallet" },
-  { label: "My Wishlist", to: "/profile", query: "section=wishlist" },
+  { label: "My Wishlist", to: "/profile", query: "section=section=wishlist" },
   { label: "My Subscriptions", to: "/profile", query: "section=subscriptions" },
   { label: "My Account", to: "/profile", query: "section=account" },
   { label: "Admin Panel", to: "/admin/add-product" },

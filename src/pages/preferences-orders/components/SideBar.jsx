@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,27 +8,44 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  CreditCard,
-  Home,
-  Package,
-  User,
-  Heart,
-  Settings,
-  Camera,
-} from "lucide-react";
+import { Home, Package, User, Heart, Settings, Camera } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/authStore";
+import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 
 export default function Sidebar({ selectedSection, setSelectedSection }) {
   const [isHovering, setIsHovering] = useState(false);
   const { user } = useAuthStore();
+  const { updatePersonalInfo } = useUpdateProfile();
+  const fileInputRef = useRef(null);
+
   const handleAvatarChange = () => {
-    console.log("Changing avatar");
-    toast({
-      title: "Avatar Update",
-      description: "Your profile picture has been updated.",
-    });
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        await updatePersonalInfo(
+          user.firstName,
+          user.lastName,
+          user.phone,
+          file
+        );
+        toast({
+          title: "Avatar Update",
+          description: "Your profile picture has been updated.",
+        });
+      } catch (error) {
+        console.error("Error updating avatar:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update profile picture.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const getInitials = (name) => {
@@ -66,6 +83,13 @@ export default function Sidebar({ selectedSection, setSelectedSection }) {
                   <Camera className="text-white" />
                 </div>
               )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
             <div className="text-center sm:text-left lg:text-center">
               <CardTitle>{user.displayName}</CardTitle>
@@ -90,14 +114,6 @@ export default function Sidebar({ selectedSection, setSelectedSection }) {
             >
               <Home className="mr-2 h-4 w-4" />
               My Addresses
-            </Button>
-            <Button
-              variant={selectedSection === "wallet" ? "secondary" : "ghost"}
-              className="justify-start"
-              onClick={() => setSelectedSection("wallet")}
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              My Wallet
             </Button>
             <Button
               variant={selectedSection === "wishlist" ? "secondary" : "ghost"}

@@ -1,31 +1,63 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 import axiosInstance from "@/instances/axiosInstance";
 import useAuthStore from "@/store/authStore";
 
 export const useUpdateProfile = () => {
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, reloadUser } = useAuthStore();
 
-  const updatePersonalInfo = async (firstName, lastName, phone) => {
+  const updateUserState = useCallback(
+    (newData) => {
+      setUser(newData);
+      reloadUser();
+    },
+    [setUser, reloadUser]
+  );
+
+  const updatePersonalInfo = async (firstName, lastName, phone, photoFile) => {
     setLoading(true);
+
     try {
-      const response = await axiosInstance.put("/profile", {
-        firstName,
-        lastName,
-        phone,
+      const formData = new FormData();
+      if (firstName) formData.append("firstName", firstName);
+      if (lastName) formData.append("lastName", lastName);
+      if (phone) formData.append("phone", phone);
+      if (photoFile) formData.append("photo", photoFile);
+
+      const response = await axiosInstance.put("/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
+      console.log("Server response:", response.data);
 
       toast({
         title: "Profile Updated",
         description: response.data.message,
       });
 
-      setUser({
-        ...user,
-        displayName: `${firstName} ${lastName}`,
-        phone,
-      });
+      if (response.data.user) {
+        const updatedDisplayName =
+          `${firstName || ""} ${lastName || ""}`.trim() ||
+          user?.displayName ||
+          "";
+
+        updateUserState({
+          displayName: updatedDisplayName,
+          email: response.data.user.email,
+          photoURL: response.data.user.photoURL,
+          phone: response.data.user.phone,
+        });
+
+        console.log(
+          "Updated user state from store:",
+          useAuthStore.getState().user
+        );
+      } else {
+        console.error("User data is missing in the response.");
+      }
     } catch (error) {
       console.error("Error updating personal info:", error);
       toast({
@@ -47,15 +79,21 @@ export const useUpdateProfile = () => {
         password,
       });
 
+      console.log("Server response:", response.data);
+
       toast({
         title: "Security Info Updated",
         description: response.data.message,
       });
 
-      setUser({
-        ...user,
-        email,
+      updateUserState({
+        email: response.data.user.email,
       });
+
+      console.log(
+        "Updated user state from store:",
+        useAuthStore.getState().user
+      );
     } catch (error) {
       console.error("Error updating security info:", error);
       toast({

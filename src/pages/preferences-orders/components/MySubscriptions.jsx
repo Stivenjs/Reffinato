@@ -1,8 +1,9 @@
 import { useSubscription } from "@/hooks/fetchSucriptions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import useAuthStore from "@/store/authStore";
-import { CalendarDays, Percent, User, AlertCircle } from "lucide-react";
+import { CalendarDays, Percent, User } from "lucide-react";
 
 export default function MySubscriptions() {
   const { user } = useAuthStore();
@@ -14,7 +15,7 @@ export default function MySubscriptions() {
   }`.trim();
 
   return (
-    <Card >
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-2xl font-bold">My Subscription</CardTitle>
         {!isLoading && (
@@ -25,14 +26,9 @@ export default function MySubscriptions() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        ) : error ? (
-          <div className="flex items-center space-x-2 text-destructive">
-            <AlertCircle className="w-4 h-4" />
-            <p className="text-sm">
-              Error fetching subscription: {error.message}
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            You don't have any active subscription.
+          </p>
         ) : subscription ? (
           <div className="grid gap-4">
             <div className="flex items-center space-x-4 rounded-md border p-4">

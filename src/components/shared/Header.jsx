@@ -47,6 +47,10 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleFavorite = () => {
+    navigate("/profile?section=wishlist");
+  };
+
   return (
     <TooltipProvider>
       <motion.nav
@@ -140,12 +144,12 @@ export default function Header() {
               <UserMenu />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="p-2">
+                  <button className="p-2" onClick={handleFavorite}>
                     <Heart className="h-5 w-5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Favoritos</p>
+                  <p>Favorite</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -157,7 +161,7 @@ export default function Header() {
                   />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Carrito</p>
+                  <p>Cart</p>
                 </TooltipContent>
               </Tooltip>
               <span className="hidden md:inline">COLOMBIA</span>

@@ -11,6 +11,8 @@ import useAuthStore from "@/store/authStore";
 
 export const useAuth = () => {
   const setUser = useAuthStore((state) => state.setUser);
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const reloadUser = useAuthStore((state) => state.reloadUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -99,15 +101,18 @@ export const useAuth = () => {
 
   const logout = async () => {
     setLoading(true);
+    setError(null);
     try {
       const auth = getAuth();
       await auth.signOut();
-      setUser(null);
+      clearUser();
+      reloadUser();
       localStorage.removeItem("token");
       setLoading(false);
       navigate("/login");
       return { success: true };
     } catch (err) {
+      console.error("Error al cerrar sesión:", err);
       setError("Error al cerrar sesión");
       setLoading(false);
       return { success: false, error: "Error al cerrar sesión" };

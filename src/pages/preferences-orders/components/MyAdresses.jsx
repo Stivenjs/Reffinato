@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
   User,
@@ -9,6 +9,7 @@ import {
   MapPinned,
   Phone,
   Home,
+  ChevronDown,
 } from "lucide-react";
 import { PiCity } from "react-icons/pi";
 import { Country, State } from "country-state-city";
@@ -26,11 +27,91 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAddresses } from "@/hooks/fetchAddresses";
 import useAuthStore from "@/store/authStore";
-import CustomSelect from "@/components/shared/CustomSelect";
 import useSendData from "@/hooks/useSendData";
 
+const CustomSelect = ({ options, value, onChange, placeholder, disabled }) => {
+  return (
+    <div className="relative">
+      <select
+        className="w-full p-2 pr-8 border border-gray-300 rounded-md appearance-none bg-white"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+    </div>
+  );
+};
+
+const CountryRegionSelector = ({ control, watch, setValue }) => {
+  const watchCountry = watch("country");
+
+  const countryOptions = useMemo(
+    () =>
+      Country.getAllCountries().map((country) => ({
+        value: country.isoCode,
+        label: country.name,
+      })),
+    []
+  );
+
+  const regionOptions = useMemo(() => {
+    if (!watchCountry) return [];
+    return State.getStatesOfCountry(watchCountry).map((state) => ({
+      value: state.isoCode,
+      label: state.name,
+    }));
+  }, [watchCountry]);
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="country">Country</Label>
+        <Controller
+          name="country"
+          control={control}
+          rules={{ required: "Country is required" }}
+          render={({ field }) => (
+            <CustomSelect
+              options={countryOptions}
+              value={field.value}
+              onChange={(value) => {
+                field.onChange(value);
+                setValue("region", "");
+              }}
+              placeholder="Select a country"
+            />
+          )}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="region">Region</Label>
+        <Controller
+          name="region"
+          control={control}
+          render={({ field }) => (
+            <CustomSelect
+              options={regionOptions}
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Select a region"
+              disabled={!watchCountry || regionOptions.length === 0}
+            />
+          )}
+        />
+      </div>
+    </div>
+  );
+};
+
 export default function MyAddresses() {
-  const [selectedCountry, setSelectedCountry] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuthStore();
   const { sendData, editData, loading, error } = useSendData();
@@ -42,6 +123,7 @@ export default function MyAddresses() {
     watch,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     defaultValues: {
       firstName: "",
@@ -57,8 +139,6 @@ export default function MyAddresses() {
       isDefault: false,
     },
   });
-
-  const watchCountry = watch("country");
 
   useEffect(() => {
     if (addresses && addresses.length > 0) {
@@ -76,7 +156,6 @@ export default function MyAddresses() {
         phone: address.phone,
         isDefault: address.is_default,
       });
-      setSelectedCountry(address.country);
     }
   }, [addresses, reset]);
 
@@ -92,23 +171,6 @@ export default function MyAddresses() {
       setIsEditing(false);
     }
   };
-
-  const countryOptions = useMemo(
-    () =>
-      Country.getAllCountries().map((country) => ({
-        value: country.isoCode,
-        label: country.name,
-      })),
-    []
-  );
-
-  const regionOptions = useMemo(() => {
-    if (!selectedCountry) return [];
-    return State.getStatesOfCountry(selectedCountry).map((state) => ({
-      value: state.isoCode,
-      label: state.name,
-    }));
-  }, [selectedCountry]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -191,52 +253,11 @@ export default function MyAddresses() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Controller
-            name="country"
-            control={control}
-            rules={{ required: "Country is required" }}
-            render={({ field }) => (
-              <CustomSelect
-                options={countryOptions}
-                placeholder="Select a country"
-                onChange={(selectedOption) => {
-                  field.onChange(selectedOption.value);
-                  setSelectedCountry(selectedOption.value);
-                }}
-                value={countryOptions.find(
-                  (option) => option.value === field.value
-                )}
-              />
-            )}
-          />
-          {errors.country && (
-            <p className="text-sm text-red-500">{errors.country.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="region">Region</Label>
-          <Controller
-            name="region"
-            control={control}
-            render={({ field }) => (
-              <CustomSelect
-                options={regionOptions}
-                placeholder="Select a region"
-                onChange={(selectedOption) =>
-                  field.onChange(selectedOption ? selectedOption.value : "")
-                }
-                disabled={!watchCountry || regionOptions.length === 0}
-                value={regionOptions.find(
-                  (option) => option.value === field.value
-                )}
-              />
-            )}
-          />
-        </div>
-      </div>
+      <CountryRegionSelector
+        control={control}
+        watch={watch}
+        setValue={setValue}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -294,65 +315,69 @@ export default function MyAddresses() {
     <Card className="w-full max-w-md justify-between">
       <CardContent className="space-y-4 pt-6">
         <div className="flex items-center space-x-2">
-          <User className="w-5 h-5 " />
+          <User className="w-5 h-5" />
           <p>
             <strong>Name:</strong> {address[0].first_name}{" "}
             {address[0].last_name}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Building className="w-5 h-5 " />
+          <Building className="w-5 h-5" />
           <p>
             <strong>Company:</strong> {address[0].company_name}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <MapPin className="w-5 h-5 " />
+          <MapPin className="w-5 h-5" />
           <p>
             <strong>Address:</strong> {address[0].address}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <MapPin className="w-5 h-5 " />
+          <MapPin className="w-5 h-5" />
           <p>
             <strong>Line 2 address:</strong> {address[0].address_line_2}
           </p>
         </div>
-
         <div className="flex items-center space-x-2">
-          <PiCity className="w-5 h-5 " />
+          <PiCity className="w-5 h-5" />
           <p>
             <strong>City:</strong> {address[0].city}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Flag className="w-5 h-5 " />
+          <Flag className="w-5 h-5" />
           <p>
             <strong>Country:</strong>{" "}
-            {countryOptions.find((c) => c.value === address[0].country)?.label}
+            {Country.getCountryByCode(address[0].country)?.name}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Globe className="w-5 h-5 " />
+          <Globe className="w-5 h-5" />
           <p>
             <strong>Region:</strong>{" "}
-            {regionOptions.find((r) => r.value === address[0].region)?.label}
+            {
+              State.getStateByCodeAndCountry(
+                address[0].region,
+                address[0].country
+              )?.name
+            }
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <MapPinned className="w-5 h-5 " />
+          <MapPinned className="w-5 h-5" />
           <p>
             <strong>Zip Code:</strong> {address[0].zip_code}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Phone className="w-5 h-5 " />
+          <Phone className="w-5 h-5" />
           <p>
             <strong>Phone:</strong> {address[0].phone}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Home className="w-5 h-5 " />
+          <Home className="w-5 h-5" />
           <p>
             <strong>Default Address:</strong>{" "}
             {address[0].is_default ? "Yes" : "No"}
@@ -369,14 +394,6 @@ export default function MyAddresses() {
       </CardFooter>
     </Card>
   );
-
-  if (isLoading) {
-    return <div>Loading addresses...</div>;
-  }
-
-  if (isError) {
-    return <div>Error loading addresses. Please try again later.</div>;
-  }
 
   return (
     <Card>

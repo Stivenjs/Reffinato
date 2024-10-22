@@ -18,6 +18,8 @@ import UpdateProfile from "@/pages/preferences-orders/UpdateProfile";
 import ShoppingCart from "@/components/shared/ShoppingCart";
 import CheckoutPage from "../pages/checkout/CheckoutPage";
 import AdminProductForm from "@/pages/admin/AdminProductForm";
+import AdminProductList from "../pages/admin/AdminProductList";
+import AdminOrdenedProducts from "../pages/admin/AdminOrdenedProducts";
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -30,7 +32,7 @@ function AppRoutes() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const authRoutes = ["/login", "/register", "/reset-password"];
+  const authRoutes = ["/login", "/register", "/reset-password",];
   const isAuthRoute = authRoutes.includes(location.pathname);
 
   return (
@@ -51,6 +53,8 @@ function AppRoutes() {
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin/add-product" element={<AdminProductForm />} />
+        <Route path="/admin/products" element={<AdminProductList/>} />
+        <Route path="/admin/orders" element={<AdminOrdenedProducts/>} />
       </Routes>
       {!isAuthRoute && <Toaster />}
       {!isAuthRoute && <NewsLetter />}

@@ -11,7 +11,6 @@ const CartItem = ({
   removeFromCart,
   handleImageClick,
 }) => {
-  console.log("Cart Item:", item);
   return (
     <div className="flex items-center justify-between py-4 border-b">
       <div className="flex items-center">
@@ -109,7 +108,7 @@ const Cart = React.forwardRef(({ isOpen, onClose, onOpen }, ref) => {
   };
 
   const handleClearCart = () => {
-    clearCart(); // Llama a la función para limpiar el carrito
+    clearCart();
   };
 
   return (

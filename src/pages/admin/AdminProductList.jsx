@@ -4,12 +4,9 @@ import { toast } from "@/hooks/use-toast";
 import SideBar from "../../components/shared/SideBar";
 import useProductList from "../../hooks/useProductList";
 
-
-
 const AdminProductList = () => {
-
-  const {productList, fetchProducts} = useProductList();
-  console.log()
+  const { productList, fetchProducts } = useProductList();
+  console.log();
 
   const deleteProduct = async (id) => {
     try {

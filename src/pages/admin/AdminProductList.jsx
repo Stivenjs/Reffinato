@@ -10,6 +10,7 @@ const AdminProductList = () => {
   const fetchProducts = async () => {
     try {
       const { data } = await axiosInstance.get("/products/list");
+      console.log(data);
 
       if (data) {
         setProductList(data);
@@ -55,9 +56,9 @@ const AdminProductList = () => {
 
   return (
     <div className="flex flex-row">
-      <SideBar/>
+      <SideBar />
       <div className="flex flex-col gap-2 w-[80%] mt-24 mb-9 relative left-3">
-      <b className="mb-2">Products list</b>
+        <b className="mb-2">Products list</b>
         {/* titulo de la tabla */}
         <div className="hidden md:grid grid-cols-[1fr_0.9fr_0.89fr_0.88fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
           <b>image</b>
@@ -74,7 +75,11 @@ const AdminProductList = () => {
             key={x}
             className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
           >
-            <img src={item.photos[0]} alt="Product image" className="w-12 h-20" />
+            <img
+              src={item.photos[0]}
+              alt="Product image"
+              className="w-12 h-20"
+            />
             <p>{item.name}</p>
             <p>{item.color}</p>
             <p>{item.price}</p>

@@ -21,7 +21,6 @@ const useCartStore = create((set, get) => ({
       });
 
       if (response.status === 200 || response.status === 201) {
-        // Reload the cart to get the updated state from the server
         const { loadCart } = get();
         await loadCart(user.uid);
       }

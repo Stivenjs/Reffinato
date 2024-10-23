@@ -8,8 +8,8 @@ const fetchProductById = async (id) => {
 
 export const useProductById = (id) => {
   return useQuery({
-    queryKey: ["product", id], // Cambiado a queryKey
-    queryFn: () => fetchProductById(id), // Cambiado a queryFn
-    enabled: !!id, // Solo ejecutar la consulta si el ID es válido
+    queryKey: ["product", id], 
+    queryFn: () => fetchProductById(id), 
+    enabled: !!id, 
   });
 };

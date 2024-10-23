@@ -6,7 +6,6 @@ import useAuthStore from "@/store/authStore";
 export const useUpdateProfile = () => {
   const [loading, setLoading] = useState(false);
   const { user, setUser, reloadUser } = useAuthStore();
-
   const updateUserState = useCallback(
     (newData) => {
       setUser(newData);

@@ -4,7 +4,7 @@ import { Search, X, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProducts } from "@/hooks/useProducts";
 
-export default function SearchBar({ onClose }) {
+export default function Component({ onClose }) {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState([]);
@@ -34,7 +34,7 @@ export default function SearchBar({ onClose }) {
   const handleSearch = (e) => {
     e.preventDefault();
     if (query.trim() === "") {
-      return; // No buscar si el query está vacío
+      return;
     }
     setIsSearching(true);
 
@@ -44,16 +44,18 @@ export default function SearchBar({ onClose }) {
       return;
     }
 
-    const filteredResults = allProducts.filter((product) => {
-      const nameMatch = product.name
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      const categoryMatch =
-        filterCategory === "all" || product.category === filterCategory;
-      const sizeMatch =
-        filterSize === "all" || product.sizes.includes(filterSize);
-      return nameMatch && categoryMatch && sizeMatch;
-    });
+    const filteredResults = allProducts
+      .filter((product) => {
+        const nameMatch = product.name
+          .toLowerCase()
+          .includes(query.toLowerCase());
+        const categoryMatch =
+          filterCategory === "all" || product.category === filterCategory;
+        const sizeMatch =
+          filterSize === "all" || product.sizes.includes(filterSize);
+        return nameMatch && categoryMatch && sizeMatch;
+      })
+      .slice(0, 4); // Limit to 4 results
 
     setResults(filteredResults);
     setIsSearching(false);
@@ -69,9 +71,9 @@ export default function SearchBar({ onClose }) {
 
   const handleDetails = (id) => {
     navigate(`/products-details/${id}`);
-    setIsResultsOpen(false); // Cerrar la barra de búsqueda
+    setIsResultsOpen(false);
     if (onClose) {
-      onClose(); // Llamar a onClose si está definido
+      onClose();
     }
   };
 
@@ -210,11 +212,11 @@ export default function SearchBar({ onClose }) {
                     </div>
                   </div>
                 ))
-              ) : (
+              ) : query.trim() !== "" ? (
                 <div className="p-4 text-sm text-gray-500">
-                  No results found
+                  No results found for "{query}"
                 </div>
-              )}
+              ) : null}
             </motion.div>
           )}
       </AnimatePresence>

@@ -19,17 +19,17 @@ export default function MyWishlist() {
 
   useEffect(() => {
     if (user) {
-      updateFavorites(); // Initial update
-      const unsubscribe = subscribe(updateFavorites); // Subscribe to changes
+      updateFavorites();
+      const unsubscribe = subscribe(updateFavorites);
 
-      return () => unsubscribe(); // Cleanup subscription
+      return () => unsubscribe();
     }
   }, [user, updateFavorites, subscribe]);
 
   const handleRemoveFromFavorites = useCallback(
     (id) => {
       removeFromFavorites(id);
-      updateFavorites(); // Immediately update the local state
+      updateFavorites();
     },
     [removeFromFavorites, updateFavorites]
   );
@@ -45,7 +45,7 @@ export default function MyWishlist() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card>
       <CardHeader>
         <CardTitle>My Wishlist</CardTitle>
       </CardHeader>

@@ -1,17 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
+import { useSubscription } from "@/hooks/fetchSucriptions";
 import { Loader2 } from "lucide-react";
 import BlurFade from "@/components/ui/blur-fade";
+import useAuthStore from "@/store/authStore";
+import seedrandom from "seedrandom"; 
 
-function ProductCard({ product, index }) {
+function ProductCard({ product, index, discountPercentage }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <BlurFade delay={0.25 + index * 0.05} inView={true}>
       <Link to={`/products-details/${product.id}`}>
         <div
-          className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer"
+          className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer relative"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -23,6 +26,11 @@ function ProductCard({ product, index }) {
               }`}
               className="w-full h-60 md:h-72 lg:h-96 object-cover transition-opacity duration-300"
             />
+            {discountPercentage > 0 && (
+              <div className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded">
+                {discountPercentage}% OFF
+              </div>
+            )}
           </div>
           <div className="p-4">
             <h2 className="text-base md:text-lg lg:text-xl font-semibold">
@@ -32,7 +40,16 @@ function ProductCard({ product, index }) {
               {product.color}
             </p>
             <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
-              {product.price} $
+              {discountPercentage > 0 ? (
+                <>
+                  <span className="line-through text-gray-500 mr-2">
+                    ${product.price}
+                  </span>
+                  ${(product.price * (1 - discountPercentage / 100)).toFixed(2)}
+                </>
+              ) : (
+                `$${product.price}`
+              )}
             </p>
           </div>
         </div>
@@ -46,6 +63,8 @@ export default function Products() {
   const categories = ["Bikini", "Swimsuits", "Beachwear"];
   const selectedCategory = categories[activeTab];
   const location = useLocation();
+  const { user } = useAuthStore();
+  const { data: subscription } = useSubscription(user?.uid);
 
   useEffect(() => {
     const categoryFromState = location.state?.category;
@@ -56,12 +75,33 @@ export default function Products() {
       }
     }
   }, [location]);
+
   // Usa el hook para obtener productos de la categoría activa
   const {
     data: products,
     isLoading,
     error,
   } = useProductsByCategory(selectedCategory);
+
+  // Generar descuentos aleatorios semanalmente
+  const weeklyDiscounts = useMemo(() => {
+    if (!products || !subscription || subscription.status !== "active")
+      return {};
+
+    const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+    const rng = seedrandom(currentWeek.toString()); // Cambiar aquí
+
+    const discounts = {};
+    const discountedProductCount = Math.floor(products.length * 0.9); // 30% de los productos
+
+    for (let i = 0; i < discountedProductCount; i++) {
+      const randomIndex = Math.floor(rng() * products.length);
+      const randomDiscount = rng() < 0.2 ? 25 : rng() < 0.5 ? 15 : 10;
+      discounts[products[randomIndex].id] = randomDiscount;
+    }
+
+    return discounts;
+  }, [products, subscription]);
 
   // Manejo de carga y errores
   if (isLoading) {
@@ -117,6 +157,7 @@ export default function Products() {
                     key={product.id}
                     product={product}
                     index={productIndex}
+                    discountPercentage={weeklyDiscounts[product.id] || 0}
                   />
                 ))}
               </div>

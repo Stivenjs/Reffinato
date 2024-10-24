@@ -5,7 +5,13 @@ export function useOrderSubmission() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const submitOrder = async (userId, cart, totalAmount) => {
+  const submitOrder = async (
+    userId,
+    cart,
+    totalAmount,
+    shippingAddress,
+    paypalTransactionId
+  ) => {
     setIsSubmitting(true);
     setError(null);
 
@@ -14,6 +20,8 @@ export function useOrderSubmission() {
         userId,
         cart,
         totalAmount,
+        shippingAddress,
+        paypalTransactionId,
       });
       console.log("Order created:", response);
 

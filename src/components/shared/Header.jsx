@@ -31,11 +31,11 @@ export default function Header() {
   }, []);
 
   const menuItems = [
-    { id: 2, to: "/products", label: "Bikini", category: "Bikini" },
-    { id: 3, to: "/products", label: "Swimsuits", category: "Swimsuits" },
-    { id: 4, to: "/products", label: "Beachwear", category: "Beachwear" },
-    { id: 5, to: "/products", label: "Shop", category: "all" },
-    { id: 6, to: "/reffinato-gold", label: "Reffinato Gold" },
+    { id: 2, to: "/products", label: "BIKINI", category: "Bikini" },
+    { id: 3, to: "/products", label: "SWIMWUITS", category: "Swimsuits" },
+    { id: 4, to: "/products", label: "BEACHWEAR", category: "Beachwear" },
+    { id: 5, to: "/products", label: "SHOP", category: "all" },
+    { id: 6, to: "/reffinato-gold", label: "REFFINATO GOLD" },
   ];
 
   const handleMenuItemClick = (item) => {
@@ -113,7 +113,9 @@ export default function Header() {
                   className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
-              <span className="ml-2 text-lg hidden sm:block">Reffinato</span>
+              <h1 className="ml-2 hidden sm:block font-snellbt text-3xl sm:text-4xl">
+                Reffinato
+              </h1>
             </Link>
 
             <div className="hidden md:flex items-center space-x-4 lg:space-x-6 text-xs lg:text-sm">
@@ -123,8 +125,8 @@ export default function Header() {
                   onClick={() => handleMenuItemClick(item)}
                   className="relative group"
                 >
-                  <span className="relative z-10">{item.label}</span>
-                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
+                  <span className="relative z-10 font-bold">{item.label}</span>
+                  <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-[#a0501a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
                 </button>
               ))}
             </div>

@@ -70,10 +70,6 @@ export default function MyOrders() {
       return <p>Loading your orders...</p>;
     }
 
-    if (error) {
-      return <p>Error loading orders: {error}</p>;
-    }
-
     if (!orders || orders.length === 0) {
       return (
         <p className="text-gray-500">

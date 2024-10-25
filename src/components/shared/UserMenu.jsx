@@ -65,7 +65,7 @@ export default function UserMenu() {
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative font-bold" ref={menuRef}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button

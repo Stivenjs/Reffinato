@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,11 +8,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import WordRotate from "@/components/ui/word-rotate";
 import UserMenu from "../shared/UserMenu";
 import Cart from "@/components/shared/Cart";
 import SearchBar from "./SearchBar";
-import logo from "../../../public/ReffinatoLogoBrowser.webp";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,19 +20,33 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const navigate = useNavigate();
+  const cartRef = useRef(null);
+
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 50);
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setIsCartOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const menuItems = [
     { id: 2, to: "/products", label: "BIKINI", category: "Bikini" },
-    { id: 3, to: "/products", label: "SWIMWUITS", category: "Swimsuits" },
+    { id: 3, to: "/products", label: "SWIMSUITS", category: "Swimsuits" },
     { id: 4, to: "/products", label: "BEACHWEAR", category: "Beachwear" },
     { id: 5, to: "/products", label: "SHOP", category: "all" },
     { id: 6, to: "/reffinato-gold", label: "REFFINATO GOLD" },
@@ -54,7 +68,7 @@ export default function Header() {
   return (
     <TooltipProvider>
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-40 bg-white"
+        className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200"
         initial={{ y: 0 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}
@@ -70,7 +84,7 @@ export default function Header() {
                 height: { duration: 0.3, ease: "easeInOut" },
               }}
             >
-              <div className="bg-[#a0501a] text-white py-1 px-4 text-xs md:text-sm flex flex-col md:flex-row justify-between items-center overflow-hidden">
+              <div className="bg-[#a0501a] text-white py-1 px-4 text-xs md:text-sm flex flex-col md:flex-row justify-between items-center">
                 <div className="flex items-center mb-1 md:mb-0"></div>
                 <div className="mb-1 md:mb-0">
                   <WordRotate
@@ -82,7 +96,7 @@ export default function Header() {
                 </div>
                 <div>New collection 2024</div>
               </div>
-              <div className="bg-gray-100 py-2 px-4 text-xs md:text-sm flex justify-between items-center overflow-hidden">
+              <div className="bg-gray-100 py-2 px-4 text-xs md:text-sm flex justify-between items-center">
                 <div className="flex items-center">
                   <span className="mr-4">Do you need help?</span>
                 </div>
@@ -97,18 +111,17 @@ export default function Header() {
           className={`container mx-auto px-4 transition-all duration-300 ${
             isScrolled ? "border-b" : ""
           }`}
-          initial={true}
+          initial={false}
           animate={{
-            paddingTop: isScrolled ? 8 : 8,
-            paddingBottom: isScrolled ? 8 : 8,
+            height: isScrolled ? 70 : 86,
           }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between h-full">
             <Link to="/" className="flex items-center text-2xl font-bold">
               <div className="w-14 h-14 relative">
                 <img
-                  src={logo}
+                  src="/ReffinatoLogoBrowser.webp"
                   alt="Reffinato"
                   className="absolute inset-0 w-full h-full object-contain"
                 />
@@ -120,14 +133,15 @@ export default function Header() {
 
             <div className="hidden md:flex items-center space-x-4 lg:space-x-6 text-xs lg:text-sm">
               {menuItems.map((item) => (
-                <button
+                <Button
                   key={item.id}
                   onClick={() => handleMenuItemClick(item)}
-                  className="relative group"
+                  variant="ghost"
+                  className="relative group px-2 py-1"
                 >
                   <span className="relative z-10 font-bold">{item.label}</span>
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-[#a0501a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -136,19 +150,20 @@ export default function Header() {
                 <SearchBar />
               </div>
               <div className="md:hidden">
-                <button
+                <Button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2"
+                  variant="ghost"
+                  size="icon"
                 >
                   <Search className="h-5 w-5" />
-                </button>
+                </Button>
               </div>
               <UserMenu />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="p-2" onClick={handleFavorite}>
+                  <Button onClick={handleFavorite} variant="ghost" size="icon">
                     <Heart className="h-5 w-5" />
-                  </button>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Favorite</p>
@@ -156,28 +171,42 @@ export default function Header() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Cart
-                    isOpen={isCartOpen}
-                    onClose={() => setIsCartOpen(false)}
-                    onOpen={() => setIsCartOpen(true)}
-                  />
+                  <Button
+                    onClick={() => setIsCartOpen(true)}
+                    variant="ghost"
+                    size="icon"
+                  >
+                    <Cart className="h-5 w-5" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Cart</p>
                 </TooltipContent>
               </Tooltip>
               <span className="hidden md:inline">COLOMBIA</span>
-              <button
-                className="md:hidden p-2"
+              <Button
+                className="md:hidden"
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 <Menu className="h-6 w-6" />
-              </button>
+              </Button>
             </div>
           </div>
         </motion.div>
       </motion.nav>
-      {isScrolled && <div className="h-16 md:h-20" />}
+      <Cart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        onOpen={() => setIsCartOpen(true)}
+        ref={cartRef}
+      />
+      <div
+        className={`h-${isScrolled ? "18" : "22"} md:h-${
+          isScrolled ? "18" : "22"
+        }`}
+      />
 
       {/* Mobile Search */}
       <AnimatePresence>
@@ -207,31 +236,29 @@ export default function Header() {
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Menu</h2>
-                <button
+                <Button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2"
+                  variant="ghost"
+                  size="icon"
                 >
                   <Menu className="h-6 w-6" />
-                </button>
+                </Button>
               </div>
               {menuItems.map((item) => (
-                <Link
+                <Button
                   key={item.id}
-                  to={item.to}
-                  className="block py-2 hover:bg-gray-100 relative group"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => handleMenuItemClick(item)}
+                  variant="ghost"
+                  className="w-full justify-start py-2 hover:bg-gray-100 relative group"
                 >
                   <span className="relative z-10">{item.label}</span>
                   <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out origin-left"></span>
-                </Link>
+                </Button>
               ))}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Shopping Cart */}
-      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </TooltipProvider>
   );
 }

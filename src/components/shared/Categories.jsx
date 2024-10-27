@@ -1,16 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import BlurFade from "@/components/ui/blur-fade";
+import swimsuits from "../../assets/imgs/swimsuits.webp";
+import bikini from "../../assets/imgs/bikini.webp";
+import beachwear from "../../assets/imgs/beachwear.webp";
 
 const categories = [
-  { id: 1, title: "Swimsuits", seed: 1 },
-  { id: 2, title: "Bikini", seed: 2 },
-  { id: 3, title: "Beachwear", seed: 3 },
+  {
+    id: 1,
+    title: "Swimsuits",
+    imageUrl: swimsuits,
+    path: "/products",
+  },
+  {
+    id: 2,
+    title: "Bikini",
+    imageUrl: bikini,
+    path: "/products",
+  },
+  {
+    id: 3,
+    title: "Beachwear",
+    imageUrl: beachwear,
+    path: "/products",
+  },
 ];
-
-const images = categories.map((category) => {
-  return `https://picsum.photos/seed/${category.seed}/800/800`;
-});
 
 export default function BeachwearCategories() {
   return (
@@ -25,7 +40,7 @@ export default function BeachwearCategories() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category, idx) => (
           <BlurFade key={category.id} delay={0.25 + idx * 0.05} inView>
-            <CategoryCard category={category} imageUrl={images[idx]} />
+            <CategoryCard category={category} />
           </BlurFade>
         ))}
       </div>
@@ -33,14 +48,20 @@ export default function BeachwearCategories() {
   );
 }
 
-function CategoryCard({ category, imageUrl }) {
+function CategoryCard({ category }) {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(category.path, { state: { category: category.title } });
+  };
 
   return (
     <motion.div
       className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
       whileHover={{ scale: 1.05 }}
       transition={{ duration: 0.3 }}
     >
@@ -51,13 +72,13 @@ function CategoryCard({ category, imageUrl }) {
       >
         <img
           className="absolute inset-0 w-full h-full object-cover"
-          src={imageUrl}
-          alt={`${category.title} category`}
+          src={category.imageUrl}
+          alt={category.title}
         />
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-2xl font-bold">
+          {category.title}
+        </div>
       </motion.div>
-      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <h3 className="text-white text-3xl font-bold">{category.title}</h3>
-      </div>
     </motion.div>
   );
 }

@@ -14,7 +14,7 @@ import useAuthStore from "@/store/authStore";
 const userMenuItems = [
   { label: "My Orders", to: "/profile", query: "section=orders" },
   { label: "My Addresses", to: "/profile", query: "section=addresses" },
-  { label: "My Wishlist", to: "/profile", query: "section=section=wishlist" },
+  { label: "My Wishlist", to: "/profile", query: "section=wishlist" },
   { label: "My Subscriptions", to: "/profile", query: "section=subscriptions" },
   { label: "My Account", to: "/profile", query: "section=account" },
   { label: "Admin Panel", to: "/admin/add-product" },
@@ -27,6 +27,9 @@ export default function UserMenu() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const menuRef = useRef(null);
+
+  // Obtén el UID del admin desde la variable de entorno usando import.meta.env
+  const adminUID = import.meta.env.VITE_ADMIN_UID;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -130,15 +133,19 @@ export default function UserMenu() {
               </div>
             </div>
             <div className="py-1">
-              {userMenuItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleMenuItemClick(item.to, item.query)}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  {item.label}
-                </button>
-              ))}
+              {userMenuItems.map((item) =>
+                // Solo muestra el "Admin Panel" si el UID coincide
+                item.label === "Admin Panel" &&
+                user?.uid !== adminUID ? null : (
+                  <button
+                    key={item.label}
+                    onClick={() => handleMenuItemClick(item.to, item.query)}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
               <button
                 onClick={() => {
                   logout();

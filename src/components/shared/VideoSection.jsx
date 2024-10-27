@@ -4,15 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 const videos = [
   {
     src: "https://reffinatotest.blob.core.windows.net/main-videos/Video de WhatsApp 2024-10-24 a las 19.07.36_6cb0093b.mp4",
-    phrase: "Descubre la elegancia playera",
+    phrase: "Discover beach elegance",
   },
   {
     src: "https://reffinatotest.blob.core.windows.net/main-videos/Video de WhatsApp 2024-10-24 a las 19.07.42_156c3193.mp4",
-    phrase: "Vive el verano con estilo",
+    phrase: "Live summer in style",
   },
   {
     src: "https://reffinatotest.blob.core.windows.net/main-videos/10493914-uhd_4096_2160_25fps.mp4",
-    phrase: "Siente la brisa del mar",
+    phrase: "Feel the sea breeze",
   },
 ];
 

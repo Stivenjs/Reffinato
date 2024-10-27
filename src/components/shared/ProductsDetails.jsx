@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
@@ -17,13 +17,18 @@ import useFavoritesStore from "@/store/favoriteStore";
 import SizeSelector from "./SizeSelector";
 import useCartStore from "@/store/cartStore";
 import useAuthStore from "@/store/authStore";
-import seedrandom from "seedrandom";
+import {
+  calculateWeeklyDiscounts,
+  getDiscountForProduct,
+  calculateDiscountedPrice,
+} from "./discountLogic";
 
 export default function ProductDetails() {
   const { addToCart } = useCartStore();
   const { addToFavorites, removeFromFavorites, isFavorite } =
     useFavoritesStore();
   const { id } = useParams();
+  const location = useLocation();
   const { data: product, isLoading, isError } = useProductById(id);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -35,23 +40,18 @@ export default function ProductDetails() {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const { data: subscription } = useSubscription(user?.uid);
-
-  // Calculate discount
   const [discountPercentage, setDiscountPercentage] = useState(0);
 
   useEffect(() => {
     if (product && subscription && subscription.status === "active") {
-      const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-      const rng = seedrandom(currentWeek.toString() + product.id);
-
-      if (rng() < 0.9) {
-        // 30% chance of discount
-        setDiscountPercentage(rng() < 0.2 ? 25 : rng() < 0.5 ? 15 : 10);
-      }
+      const weeklyDiscounts = calculateWeeklyDiscounts([product], true);
+      const discount = getDiscountForProduct(product.id, weeklyDiscounts);
+      setDiscountPercentage(discount);
+    } else if (location.state && location.state.discountPercentage) {
+      setDiscountPercentage(location.state.discountPercentage);
     }
-  }, [product, subscription]);
+  }, [product, subscription, location.state]);
 
-  // Manejar el estado de la imagen principal
   useEffect(() => {
     if (product) {
       setMainImage(product.photos[0]);
@@ -93,10 +93,10 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     if (selectedSize) {
-      const discountedPrice =
-        discountPercentage > 0
-          ? Number((product.price * (1 - discountPercentage / 100)).toFixed(2))
-          : product.price;
+      const discountedPrice = calculateDiscountedPrice(
+        product.price,
+        discountPercentage
+      );
 
       const productWithDiscount = {
         ...product,
@@ -120,17 +120,29 @@ export default function ProductDetails() {
   };
 
   const handleFavoriteClick = () => {
+    const discountedPrice = calculateDiscountedPrice(
+      product.price,
+      discountPercentage
+    );
+
+    const productWithDiscount = {
+      ...product,
+      price: discountedPrice,
+      originalPrice: product.price,
+      discountPercentage: discountPercentage,
+    };
+
     if (isFavorite(product.id)) {
       removeFromFavorites(product.id);
     } else {
-      addToFavorites(product);
+      addToFavorites(productWithDiscount);
     }
   };
 
-  const discountedPrice =
-    discountPercentage > 0
-      ? (product.price * (1 - discountPercentage / 100)).toFixed(2)
-      : product.price;
+  const discountedPrice = calculateDiscountedPrice(
+    product.price,
+    discountPercentage
+  );
 
   return (
     <div className="container mx-auto px-15 md:px-8 lg:px-16 py-20 mt-24">
@@ -185,7 +197,9 @@ export default function ProductDetails() {
                 </p>
               </>
             ) : (
-              <p className="text-xl md:text-2xl font-bold">${product.price}</p>
+              <p className="text-xl md:text-2xl font-bold">
+                ${product.price}
+              </p>
             )}
           </div>
           <div className="mt-6">

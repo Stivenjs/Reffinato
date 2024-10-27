@@ -1,19 +1,32 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import { useSubscription } from "@/hooks/fetchSucriptions";
+import { Input } from "@/components/ui/input";
 import { Loader2, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import baner from "../../assets/imgs/baner.webp";
 import BlurFade from "@/components/ui/blur-fade";
 import useAuthStore from "@/store/authStore";
-import seedrandom from "seedrandom";
-import { Input } from "@/components/ui/input";
+import {
+  calculateWeeklyDiscounts,
+  getDiscountForProduct,
+  calculateDiscountedPrice,
+} from "./discountLogic";
 
 function ProductCard({ product, index, discountPercentage }) {
   const [isHovered, setIsHovered] = useState(false);
 
+  const discountedPrice = calculateDiscountedPrice(
+    product.price,
+    discountPercentage
+  );
+
   return (
     <BlurFade delay={0.25 + index * 0.05} inView={true}>
-      <Link to={`/products-details/${product.id}`}>
+      <Link
+        to={`/products-details/${product.id}`}
+        state={{ discountPercentage }}
+      >
         <div
           className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer relative"
           onMouseEnter={() => setIsHovered(true)}
@@ -46,7 +59,7 @@ function ProductCard({ product, index, discountPercentage }) {
                   <span className="line-through text-gray-500 mr-2">
                     ${product.price}
                   </span>
-                  ${(product.price * (1 - discountPercentage / 100)).toFixed(2)}
+                  ${discountedPrice}
                 </>
               ) : (
                 `$${product.price}`
@@ -61,37 +74,44 @@ function ProductCard({ product, index, discountPercentage }) {
 
 function CustomSelect({ value, onChange, options }) {
   const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
 
   return (
-    <div className="relative inline-block text-left">
-      <div>
-        <button
-          type="button"
-          className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          id="options-menu"
-          aria-haspopup="true"
-          aria-expanded="true"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {options.find((option) => option.value === value)?.label ||
-            "Select option"}
-          <ChevronDown className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
+    <div className="relative inline-block text-left w-full" ref={ref}>
+      <button
+        type="button"
+        className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        {options.find((option) => option.value === value)?.label ||
+          "Select option"}
+        <ChevronDown className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+      </button>
 
       {isOpen && (
-        <div className="origin-top-right absolute right-0 bottom-full mb-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-          <div
-            className="py-1"
-            role="menu"
-            aria-orientation="vertical"
-            aria-labelledby="options-menu"
-          >
+        <div className="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+          <div className="py-1" role="listbox" aria-label="Options">
             {options.map((option) => (
               <button
                 key={option.value}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                role="menuitem"
+                role="option"
+                aria-selected={value === option.value}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
@@ -134,22 +154,10 @@ export default function Products() {
   } = useProductsByCategory(selectedCategory);
 
   const weeklyDiscounts = useMemo(() => {
-    if (!products || !subscription || subscription.status !== "active")
-      return {};
-
-    const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-    const rng = seedrandom(currentWeek.toString());
-
-    const discounts = {};
-    const discountedProductCount = Math.floor(products.length * 0.9);
-
-    for (let i = 0; i < discountedProductCount; i++) {
-      const randomIndex = Math.floor(rng() * products.length);
-      const randomDiscount = rng() < 0.2 ? 25 : rng() < 0.5 ? 15 : 10;
-      discounts[products[randomIndex].id] = randomDiscount;
-    }
-
-    return discounts;
+    return calculateWeeklyDiscounts(
+      products,
+      subscription?.status === "active"
+    );
   }, [products, subscription]);
 
   const filteredAndSortedProducts = useMemo(() => {
@@ -173,7 +181,6 @@ export default function Products() {
         filtered.sort((a, b) => b.name.localeCompare(a.name));
         break;
       default:
-        // 'featured' - no sorting needed
         break;
     }
 
@@ -204,7 +211,7 @@ export default function Products() {
     <div className="container mx-auto px-4 mt-24 md:mt-32 lg:mt-48">
       <div className="relative mb-8">
         <img
-          src="/placeholder.svg?height=300&width=1200"
+          src={baner}
           alt="Shop Banner"
           className="w-full h-48 md:h-64 lg:h-80 object-cover rounded-lg"
         />
@@ -277,7 +284,10 @@ export default function Products() {
                       key={product.id}
                       product={product}
                       index={productIndex}
-                      discountPercentage={weeklyDiscounts[product.id] || 0}
+                      discountPercentage={getDiscountForProduct(
+                        product.id,
+                        weeklyDiscounts
+                      )}
                     />
                   ))}
                 </div>

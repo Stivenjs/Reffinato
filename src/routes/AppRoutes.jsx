@@ -20,6 +20,7 @@ import CheckoutPage from "../pages/checkout/CheckoutPage";
 import AdminProductForm from "@/pages/admin/AdminProductForm";
 import AdminProductList from "../pages/admin/AdminProductList";
 import AdminOrdenedProducts from "../pages/admin/AdminOrdenedProducts";
+import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import AdminOrderDetails from "../pages/admin/AdminOrderDetails";
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,7 +34,7 @@ function AppRoutes() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const authRoutes = ["/login", "/register", "/reset-password",];
+  const authRoutes = ["/login", "/register", "/reset-password"];
   const isAuthRoute = authRoutes.includes(location.pathname);
 
   return (
@@ -41,21 +42,32 @@ function AppRoutes() {
       {!isAuthRoute && <Header isScrolled={isScrolled} />}
       <ScrollToTop />
       <Routes>
+        {/* Rutas de autenticación */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Rutas públicas */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products-details/:id" element={<ProductsDetails />} />
         <Route path="/reffinato-gold" element={<RefinnatoGold />} />
         <Route path="/store-policies" element={<StorePolicies />} />
         <Route path="/size-guide" element={<SizeGuide />} />
-        <Route path="/profile" element={<UpdateProfile />} />
-        <Route path="/cart" element={<ShoppingCart />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/admin/add-product" element={<AdminProductForm />} />
-        <Route path="/admin/products" element={<AdminProductList/>} />
-        <Route path="/admin/orders" element={<AdminOrdenedProducts/>} />
+
+        {/* Rutas protegidas para usuarios autenticados */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<UpdateProfile />} />
+          <Route path="/cart" element={<ShoppingCart />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+        </Route>
+
+        {/* Rutas protegidas solo para el administrador */}
+        <Route element={<ProtectedRoute adminOnly={true} />}>
+          <Route path="/admin/add-product" element={<AdminProductForm />} />
+          <Route path="/admin/products" element={<AdminProductList />} />
+          <Route path="/admin/orders" element={<AdminOrdenedProducts />} />
+        </Route>
       </Routes>
       {!isAuthRoute && <Toaster />}
       {!isAuthRoute && <NewsLetter />}

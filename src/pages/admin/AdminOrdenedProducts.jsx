@@ -1,31 +1,31 @@
 import SideBar from "../../components/shared/SideBar";
 import useOrdersList from "../../hooks/useOrdersList";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import AdminOrderDetails from "../admin/AdminOrderDetails"
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import axiosInstance from "../../instances/axiosInstance";
 
 const AdminOrdenedProducts = () => {
-  const { ordersList } = useOrdersList();
-  // const deleteProduct = async (id) => {
-  //   try {
-  //     const { data } = await axiosInstance.delete(`/products/delete/${id}`);
+  const { ordersList, fetchOrders } = useOrdersList();
+  const deleteOrder = async (id) => {
+    try {
+      const { data } = await axiosInstance.delete(`/orders/delete/${id}`);
 
-  //     if (data.success) {
-  //       toast({
-  //         title: "Deleted product",
-  //         description: "The product has been successfully deleted.",
-  //       });
-  //       await fetchProducts();
-  //     }
-  //   } catch (error) {
-  //     toast({
-  //       title: "Error",
-  //       description: error.message,
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
+      if (data.success) {
+        toast({
+          title: "Deleted order",
+          description: "The product has been successfully order.",
+        });
+        await fetchOrders();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -51,7 +51,7 @@ const AdminOrdenedProducts = () => {
             <div className="flex gap-2 justify-center">
               <AdminOrderDetails orderId={item.id}/>
               <Button
-                // onClick={() => deleteProduct(item.id)}
+                onClick={() => deleteOrder(item.id)}
                 className="bg-red-600 w-24 text-xs sm:text-sm"
               >
                 Delete

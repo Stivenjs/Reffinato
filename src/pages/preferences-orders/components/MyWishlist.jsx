@@ -1,30 +1,56 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import useFavoritesStore from "@/store/favoriteStore";
 import { useProductById } from "@/hooks/fetchProductById";
 import { Loader2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "@/store/authStore";
+import useFavoritesStore from "@/store/favoriteStore";
 
 export default function MyWishlist() {
-  const { favorites, removeFromFavorites } = useFavoritesStore();
+  const { user } = useAuthStore();
+  const { getUserFavorites, removeFromFavorites, subscribe } =
+    useFavoritesStore();
   const [productIds, setProductIds] = useState([]);
-  const navigate = useNavigate();
+
+  const updateFavorites = useCallback(() => {
+    const favorites = getUserFavorites();
+    setProductIds(favorites.map((fav) => fav.id));
+  }, [getUserFavorites]);
 
   useEffect(() => {
-    setProductIds(favorites.map((fav) => fav.id));
-  }, [favorites]);
+    if (user) {
+      updateFavorites();
+      const unsubscribe = subscribe(updateFavorites);
 
-  const handleDetails = (id) => {
-    navigate(`/products-details/${id}`);
-  };
+      return () => unsubscribe();
+    }
+  }, [user, updateFavorites, subscribe]);
+
+  const handleRemoveFromFavorites = useCallback(
+    (id) => {
+      removeFromFavorites(id);
+      updateFavorites();
+    },
+    [removeFromFavorites, updateFavorites]
+  );
+
+  if (!user) {
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardContent>
+          <p>Please log in to view your wishlist.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card>
       <CardHeader>
         <CardTitle>My Wishlist</CardTitle>
       </CardHeader>
       <CardContent>
-        {favorites.length === 0 ? (
+        {productIds.length === 0 ? (
           <p>Your wishlist is empty.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -32,8 +58,7 @@ export default function MyWishlist() {
               <ProductCard
                 key={id}
                 id={id}
-                removeFromFavorites={removeFromFavorites}
-                handleDetails={handleDetails}
+                removeFromFavorites={handleRemoveFromFavorites}
               />
             ))}
           </div>
@@ -43,8 +68,12 @@ export default function MyWishlist() {
   );
 }
 
-function ProductCard({ id, removeFromFavorites, handleDetails }) {
+function ProductCard({ id, removeFromFavorites }) {
   const { data: product, isLoading, isError } = useProductById(id);
+  const navigate = useNavigate();
+  const handleDetails = (id) => {
+    navigate(`/products-details/${id}`);
+  };
 
   if (isLoading) {
     return (
@@ -65,17 +94,17 @@ function ProductCard({ id, removeFromFavorites, handleDetails }) {
   }
 
   return (
-    <Card className="relative  cursor-pointer" onClick={() => handleDetails(id)}>
+    <Card className="relative">
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          removeFromFavorites(id);
-        }}
+        onClick={() => removeFromFavorites(id)}
         className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
       >
         <X className="h-4 w-4" />
       </button>
-      <CardContent className="pt-8">
+      <CardContent
+        className="pt-8 cursor-pointer"
+        onClick={() => handleDetails(id)}
+      >
         <img
           src={product.photos[0]}
           alt={product.name}

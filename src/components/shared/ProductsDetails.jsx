@@ -12,9 +12,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { useProductById } from "@/hooks/fetchProductById";
+import { useSubscription } from "@/hooks/fetchSucriptions";
 import useFavoritesStore from "@/store/favoriteStore";
 import SizeSelector from "./SizeSelector";
 import useCartStore from "@/store/cartStore";
+import useAuthStore from "@/store/authStore";
+import seedrandom from "seedrandom";
 
 export default function ProductDetails() {
   const { addToCart } = useCartStore();
@@ -30,6 +33,23 @@ export default function ProductDetails() {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [openSection, setOpenSection] = useState(null);
   const { toast } = useToast();
+  const { user } = useAuthStore();
+  const { data: subscription } = useSubscription(user?.uid);
+
+  // Calculate discount
+  const [discountPercentage, setDiscountPercentage] = useState(0);
+
+  useEffect(() => {
+    if (product && subscription && subscription.status === "active") {
+      const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+      const rng = seedrandom(currentWeek.toString() + product.id);
+
+      if (rng() < 0.9) {
+        // 30% chance of discount
+        setDiscountPercentage(rng() < 0.2 ? 25 : rng() < 0.5 ? 15 : 10);
+      }
+    }
+  }, [product, subscription]);
 
   // Manejar el estado de la imagen principal
   useEffect(() => {
@@ -73,7 +93,19 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     if (selectedSize) {
-      addToCart(product, selectedSize, quantity);
+      const discountedPrice =
+        discountPercentage > 0
+          ? Number((product.price * (1 - discountPercentage / 100)).toFixed(2))
+          : product.price;
+
+      const productWithDiscount = {
+        ...product,
+        price: discountedPrice,
+        originalPrice: product.price,
+        discountPercentage: discountPercentage,
+      };
+
+      addToCart(productWithDiscount, selectedSize, quantity);
       toast({
         title: "Added to cart",
         description: `${quantity} ${product.name} (Size: ${selectedSize}) added to cart`,
@@ -94,6 +126,11 @@ export default function ProductDetails() {
       addToFavorites(product);
     }
   };
+
+  const discountedPrice =
+    discountPercentage > 0
+      ? (product.price * (1 - discountPercentage / 100)).toFixed(2)
+      : product.price;
 
   return (
     <div className="container mx-auto px-15 md:px-8 lg:px-16 py-20 mt-24">
@@ -136,9 +173,21 @@ export default function ProductDetails() {
           <p className="text-lg md:text-xl text-gray-600 mt-2">
             {product.color}
           </p>
-          <p className="text-xl md:text-2xl font-bold mt-4">
-            {product.price} $
-          </p>
+          <div className="mt-4">
+            {discountPercentage > 0 ? (
+              <>
+                <p className="text-xl md:text-2xl font-bold line-through text-gray-500">
+                  ${product.price}
+                </p>
+                <p className="text-xl md:text-2xl font-bold text-red-600">
+                  ${discountedPrice}{" "}
+                  <span className="text-sm">({discountPercentage}% off)</span>
+                </p>
+              </>
+            ) : (
+              <p className="text-xl md:text-2xl font-bold">${product.price}</p>
+            )}
+          </div>
           <div className="mt-6">
             <SizeSelector
               sizes={product.sizes}

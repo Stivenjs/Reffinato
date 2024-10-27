@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Trash2,
   ChevronDown,
@@ -14,6 +14,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useOrderSubmission } from "@/hooks/useOrderSubmission";
+import axiosInstance from "@/instances/axiosInstance";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
 
@@ -23,6 +24,8 @@ export default function ShoppingCarts() {
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [payerName, setPayerName] = useState("");
+  const [shippingAddress, setShippingAddress] = useState(null);
+  const [paypalClientId, setPaypalClientId] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuthStore();
@@ -33,9 +36,42 @@ export default function ShoppingCarts() {
     0
   );
 
-  const handlePaymentSuccess = async (details) => {
+  useEffect(() => {
+    const fetchClientId = async () => {
+      try {
+        const response = await axiosInstance("/paypal-client-id");
+        setPaypalClientId(response.data.clientId);
+      } catch (error) {
+        console.error("Error fetching PayPal client ID:", error);
+      }
+    };
+
+    fetchClientId();
+  }, []);
+
+  const handlePaymentSuccess = async (details, data) => {
     const userId = user.uid;
-    const order = await submitOrder(userId, cartItems, total);
+    const paypalShippingAddress = details.purchase_units[0].shipping;
+
+    const formattedAddress = {
+      fullName: paypalShippingAddress.name.full_name,
+      addressLine1: paypalShippingAddress.address.address_line_1,
+      addressLine2: paypalShippingAddress.address.address_line_2 || "",
+      adminArea2: paypalShippingAddress.address.admin_area_2,
+      adminArea1: paypalShippingAddress.address.admin_area_1,
+      postalCode: paypalShippingAddress.address.postal_code,
+      countryCode: paypalShippingAddress.address.country_code,
+    };
+
+    setShippingAddress(formattedAddress);
+
+    const order = await submitOrder(
+      userId,
+      cartItems,
+      total,
+      formattedAddress,
+      details.id
+    );
 
     if (order) {
       setPaymentComplete(true);
@@ -71,7 +107,7 @@ export default function ShoppingCarts() {
   if (cartItems.length === 0 && !showAlert) {
     return (
       <div className="max-w-4xl mx-auto p-4 flex flex-col items-center justify-center mt-48">
-        <ShoppingCart className="w-16 h-16 mb-4" />
+        <ShoppingCart className="w-16 h-16 mb-4" aria-hidden="true" />
         <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
         <p className="text-gray-600 mb-4">
           Add some items to your cart to continue shopping.
@@ -91,11 +127,23 @@ export default function ShoppingCarts() {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
             <Alert variant="success">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
               <AlertTitle>Payment Successful!</AlertTitle>
               <AlertDescription>
                 Thank you for your purchase, {payerName}! Your order has been
-                processed successfully.
+                processed successfully and will be shipped to:
+                <address className="mt-2 not-italic">
+                  {shippingAddress.fullName}
+                  <br />
+                  {shippingAddress.addressLine1}
+                  <br />
+                  {shippingAddress.addressLine2 &&
+                    `${shippingAddress.addressLine2}<br />`}
+                  {shippingAddress.adminArea2}, {shippingAddress.adminArea1}{" "}
+                  {shippingAddress.postalCode}
+                  <br />
+                  {shippingAddress.countryCode}
+                </address>
               </AlertDescription>
             </Alert>
             <Button
@@ -128,7 +176,8 @@ export default function ShoppingCarts() {
                   <p className="text-sm text-gray-600">${item.price}</p>
                   <p className="text-sm text-gray-600">Size: {item.size}</p>
                   <button className="text-sm text-gray-600 flex items-center mt-2">
-                    More Details <ChevronDown className="w-4 h-4 ml-1" />
+                    More Details{" "}
+                    <ChevronDown className="w-4 h-4 ml-1" aria-hidden="true" />
                   </button>
                 </div>
                 <div className="flex flex-col items-end">
@@ -144,8 +193,9 @@ export default function ShoppingCarts() {
                         }
                       }}
                       className="p-2"
+                      aria-label="Decrease quantity"
                     >
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-4 h-4" aria-hidden="true" />
                     </button>
                     <span className="px-2">{item.quantity}</span>
                     <button
@@ -156,15 +206,20 @@ export default function ShoppingCarts() {
                         updateQuantity(item.product_id, item.size, newQuantity);
                       }}
                       className="p-2"
+                      aria-label="Increase quantity"
                     >
-                      <ChevronUp className="w-4 h-4" />
+                      <ChevronUp className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                   <button
                     onClick={() => removeFromCart(item.product_id, item.size)}
                     className="mt-2"
+                    aria-label="Remove item from cart"
                   >
-                    <Trash2 className="w-5 h-5 text-gray-500" />
+                    <Trash2
+                      className="w-5 h-5 text-gray-500"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </div>
@@ -174,6 +229,7 @@ export default function ShoppingCarts() {
                 <Input
                   placeholder="Enter a promo code"
                   className="flex-1 mr-2"
+                  aria-label="Promo code"
                 />
                 <Button variant="outline">Apply</Button>
               </div>
@@ -203,11 +259,7 @@ export default function ShoppingCarts() {
             </div>
 
             {!paymentComplete && (
-              <PayPalScriptProvider
-                options={{
-                  "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
-                }}
-              >
+              <PayPalScriptProvider options={{ "client-id": paypalClientId }}>
                 <PayPalButtons
                   createOrder={(data, actions) => {
                     return actions.order.create({
@@ -229,7 +281,8 @@ export default function ShoppingCarts() {
             )}
 
             <div className="flex items-center justify-center mt-2 text-sm text-gray-600">
-              <Lock className="w-4 h-4 mr-1" /> Secure Checkout
+              <Lock className="w-4 h-4 mr-1" aria-hidden="true" /> Secure
+              Checkout
             </div>
           </div>
         </>

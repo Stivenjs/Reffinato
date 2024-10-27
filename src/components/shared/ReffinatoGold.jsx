@@ -5,13 +5,33 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import useAuthStore from "@/store/authStore";
+import axiosInstance from "@/instances/axiosInstance";
 
 export default function RefinnatoGold() {
   const [isHovered, setIsHovered] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [paypalClientId, setPaypalClientId] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { subscribe, isLoading, error, success } = useSubscribe();
+
+  useEffect(() => {
+    const fetchClientId = async () => {
+      try {
+        const response = await axiosInstance.get("/paypal-client-id");
+        setPaypalClientId(response.data.clientId);
+      } catch (error) {
+        console.error("Error fetching PayPal client ID:", error);
+        setAlert({
+          type: "error",
+          message:
+            "Error loading PayPal. Please refresh the page or try again later.",
+        });
+      }
+    };
+
+    fetchClientId();
+  }, []);
 
   const handlePaymentSuccess = useCallback(
     async (details) => {
@@ -60,10 +80,14 @@ export default function RefinnatoGold() {
     }
   }, [error]);
 
+  if (!paypalClientId) {
+    return <div>Loading PayPal...</div>;
+  }
+
   return (
     <PayPalScriptProvider
       options={{
-        "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
+        "client-id": paypalClientId,
       }}
     >
       <motion.div

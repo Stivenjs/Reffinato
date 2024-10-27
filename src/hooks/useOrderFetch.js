@@ -6,6 +6,7 @@ async function fetchOrders(userId) {
     throw new Error("No se ha proporcionado un ID de usuario.");
   }
   const response = await axiosInstance.get(`/user/${userId}`);
+  console.log(response);
   return response.data.orders;
 }
 

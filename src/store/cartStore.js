@@ -9,6 +9,7 @@ const useCartStore = create((set, get) => ({
     try {
       const { user } = useAuthStore.getState();
       const { id, name, price, photos } = product;
+      console.log(user)
       console.log(id, name, price, photos);
       const response = await axiosInstance.post("/cart/add", {
         userId: user.uid,

@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import axiosInstance from "@/instances/axiosInstance";
 
-const useProductList = () => {
-  const [productList, setProductList] = useState([]);
+const useOrdersList = () => {
+  const [ordersList, setOrdersList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchProducts = async () => {
+  const fetchOrders = async () => {
     setLoading(true);
     try {
-      const { data } = await axiosInstance.get("/products/list");
+      const { data } = await axiosInstance.get("/all-orders");
 
       if (data) {
-        setProductList(data);
+        setOrdersList(data);
       } else {
         toast({
           title: "Error",
@@ -32,10 +32,10 @@ const useProductList = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchOrders();
   }, []);
 
-  return { productList, loading, fetchProducts };
+  return { ordersList, loading, fetchOrders };
 };
 
-export default useProductList;
+export default useOrdersList;

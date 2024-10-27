@@ -9,7 +9,6 @@ import useProductList from "../../hooks/useProductList";
 const AdminProductList = () => {
 
   const {productList, fetchProducts} = useProductList();
-  console.log()
 
   const deleteProduct = async (id) => {
     try {

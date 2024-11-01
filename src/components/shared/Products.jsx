@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import { useSubscription } from "@/hooks/fetchSucriptions";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
-import baner from "../../assets/imgs/baner.webp";
 import BlurFade from "@/components/ui/blur-fade";
 import useAuthStore from "@/store/authStore";
 import {
@@ -12,6 +11,7 @@ import {
   getDiscountForProduct,
   calculateDiscountedPrice,
 } from "./discountLogic";
+import Banner from "./Bannner";
 
 function ProductCard({ product, index, discountPercentage }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -133,19 +133,8 @@ export default function Products() {
   const [sortOption, setSortOption] = useState("featured");
   const categories = ["Bikini", "Swimsuits", "Beachwear"];
   const selectedCategory = categories[activeTab];
-  const location = useLocation();
   const { user } = useAuthStore();
   const { data: subscription } = useSubscription(user?.uid);
-
-  useEffect(() => {
-    const categoryFromState = location.state?.category;
-    if (categoryFromState) {
-      const index = categories.indexOf(categoryFromState);
-      if (index !== -1) {
-        setActiveTab(index);
-      }
-    }
-  }, [location]);
 
   const {
     data: products,
@@ -208,19 +197,8 @@ export default function Products() {
   ];
 
   return (
-    <div className="container mx-auto px-4 mt-24 md:mt-32 lg:mt-48">
-      <div className="relative mb-8">
-        <img
-          src={baner}
-          alt="Shop Banner"
-          className="w-full h-48 md:h-64 lg:h-80 object-cover rounded-lg"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-            Discover Our Collection
-          </h1>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 pt-16 md:pt-0 mt-24 md:mt-32 lg:mt-48">
+      <Banner />
 
       <div className="mb-8">
         <ul className="flex space-x-2 md:space-x-4 border-b" role="tablist">

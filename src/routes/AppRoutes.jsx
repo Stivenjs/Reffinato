@@ -21,7 +21,7 @@ import AdminProductForm from "@/pages/admin/AdminProductForm";
 import AdminProductList from "../pages/admin/AdminProductList";
 import AdminOrdenedProducts from "../pages/admin/AdminOrdenedProducts";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
-import AdminOrderDetails from "../pages/admin/AdminOrderDetails";
+
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();

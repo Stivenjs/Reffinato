@@ -2,7 +2,7 @@ import SideBar from "../../components/shared/SideBar";
 import useOrdersList from "../../hooks/useOrdersList";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import AdminOrderDetails from "../admin/AdminOrderDetails"
+import AdminOrderDetails from "../admin/AdminOrderDetails";
 import axiosInstance from "../../instances/axiosInstance";
 
 const AdminOrdenedProducts = () => {
@@ -31,7 +31,7 @@ const AdminOrdenedProducts = () => {
     <div className="flex flex-col md:flex-row">
       <SideBar />
       <div className="flex flex-col gap-2 w-full md:w-[80%] mt-24 mb-9 relative md:left-3 px-4">
-        <b className="mb-2 text-lg">Products list</b>
+        <b className="mb-2 text-lg mt-16">Products list</b>
 
         <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
           <b>Name</b>
@@ -49,7 +49,7 @@ const AdminOrdenedProducts = () => {
             <p className="hidden sm:block">{item.payment_status}</p>
             <p>{item.total_amount}</p>
             <div className="flex gap-2 justify-center">
-              <AdminOrderDetails orderId={item.id}/>
+              <AdminOrderDetails orderId={item.id} />
               <Button
                 onClick={() => deleteOrder(item.id)}
                 className="bg-red-600 w-24 text-xs sm:text-sm"

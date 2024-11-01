@@ -67,7 +67,7 @@ export default function ShoppingCarts() {
 
     const order = await submitOrder(
       userId,
-      cartItems,
+      cartItems, 
       total,
       formattedAddress,
       details.id
@@ -175,6 +175,7 @@ export default function ShoppingCarts() {
                   </Link>
                   <p className="text-sm text-gray-600">${item.price}</p>
                   <p className="text-sm text-gray-600">Size: {item.size}</p>
+                  <p className="text-sm text-gray-600">Color: {item.color}</p>
                   <button className="text-sm text-gray-600 flex items-center mt-2">
                     More Details{" "}
                     <ChevronDown className="w-4 h-4 ml-1" aria-hidden="true" />

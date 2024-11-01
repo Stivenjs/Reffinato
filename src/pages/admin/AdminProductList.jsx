@@ -30,7 +30,7 @@ const AdminProductList = () => {
     <div className="flex flex-col md:flex-row">
       <SideBar />
       <div className="flex flex-col gap-2 w-full md:w-[80%] mt-24 mb-9 relative md:left-3 px-4">
-        <b className="mb-2 text-lg">Products list</b>
+        <b className="mb-2 mt-16 text-lg">Products list</b>
 
         <div className="hidden md:grid grid-cols-[1fr_0.9fr_0.89fr_0.88fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
           <b>Image</b>
@@ -53,7 +53,19 @@ const AdminProductList = () => {
               className="w-16 h-16 md:w-12 md:h-20 object-cover"
             />
             <p>{item.name}</p>
-            <p className="hidden sm:block">{item.color}</p>
+            <div className="hidden sm:flex gap-1">
+              {item.colors.map((color, i) => (
+                <div
+                  key={i}
+                  style={{
+                    backgroundColor: color,
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                  }}
+                />
+              ))}
+            </div>
             <p>{item.price}</p>
             <p className="hidden sm:block">{item.sizes.join(", ")}</p>
             <p className="hidden sm:block">{item.category}</p>

@@ -6,12 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Upload } from "lucide-react";
 import CustomSelect from "@/components/shared/CustomSelect";
 import useAddProduct from "@/hooks/useAddProduct";
-import SideBar from "../../components/shared/SideBar";
+import SideBar from "@/components/shared/SideBar";
 
 export default function AdminProductForm() {
   const [product, setProduct] = useState({
     name: "",
-    color: "",
+    colors: [],
     price: "",
     sizes: [],
     description: "",
@@ -20,8 +20,9 @@ export default function AdminProductForm() {
     category: "",
   });
   const [newSize, setNewSize] = useState("");
+  const [newColor, setNewColor] = useState("");
   const fileInputRef = useRef(null);
-  const { addProduct, loading } = useAddProduct(); // Usa el hook
+  const { addProduct, loading } = useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +36,13 @@ export default function AdminProductForm() {
     }
   };
 
+  const handleAddColor = () => {
+    if (newColor && !product.colors.includes(newColor)) {
+      setProduct((prev) => ({ ...prev, colors: [...prev.colors, newColor] }));
+      setNewColor("");
+    }
+  };
+
   const handleRemoveSize = (sizeToRemove) => {
     setProduct((prev) => ({
       ...prev,
@@ -42,10 +50,17 @@ export default function AdminProductForm() {
     }));
   };
 
+  const handleRemoveColor = (colorToRemove) => {
+    setProduct((prev) => ({
+      ...prev,
+      colors: prev.colors.filter((color) => color !== colorToRemove),
+    }));
+  };
+
   const handlePhotoUpload = (e) => {
     const files = e.target.files;
-    if (files && files.length > 0 && product.photos.length < 3) {
-      const newPhotos = Array.from(files).slice(0, 3 - product.photos.length);
+    if (files && files.length > 0) {
+      const newPhotos = Array.from(files);
       setProduct((prev) => ({
         ...prev,
         photos: [...prev.photos, ...newPhotos],
@@ -69,13 +84,10 @@ export default function AdminProductForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    await addProduct(product); // Llama al hook para agregar el producto
-
-    // Resetea el formulario
+    await addProduct(product);
     setProduct({
       name: "",
-      color: "",
+      colors: [],
       price: "",
       sizes: [],
       description: "",
@@ -93,7 +105,7 @@ export default function AdminProductForm() {
 
   return (
     <div className="flex">
-    <SideBar/>
+      <SideBar />
       <div className="max-w-2xl mx-auto mt-32 w-[80%] pb-6">
         <h1 className="text-2xl font-bold mb-4">Add New Product</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,20 +120,41 @@ export default function AdminProductForm() {
             />
           </div>
           <div>
-            <Label htmlFor="color">Color</Label>
-            <Input
-              id="color"
-              name="color"
-              value={product.color}
-              onChange={handleChange}
-              required
-            />
+            <Label htmlFor="colors">Colors</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="colors"
+                value={newColor}
+                onChange={(e) => setNewColor(e.target.value)}
+                placeholder="Add colors"
+              />
+              <Button type="button" onClick={handleAddColor}>
+                Add
+              </Button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {product.colors.map((color) => (
+                <span
+                  key={color}
+                  className="bg-primary text-primary-foreground px-2 py-1 rounded-full flex items-center"
+                >
+                  {color}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveColor(color)}
+                    className="ml-2 text-primary-foreground hover:text-red-500"
+                  >
+                    <X size={14} />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
           <div>
             <Label htmlFor="category">Category</Label>
             <CustomSelect
               options={categoryOptions}
-              placeholder="Select a category"
+              placeholder="Select category"
               onChange={handleCategoryChange}
               value={product.category}
               name="category"
@@ -170,7 +203,7 @@ export default function AdminProductForm() {
             </div>
           </div>
           <div>
-            <Label htmlFor="photos">Product Photos (maximum 3)</Label>
+            <Label htmlFor="photos">Product Photos</Label>
             <div className="mt-2">
               <Input
                 id="photos"
@@ -184,7 +217,6 @@ export default function AdminProductForm() {
               <Button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={product.photos.length >= 3}
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Photos
@@ -195,7 +227,7 @@ export default function AdminProductForm() {
                 <div key={index} className="relative">
                   <img
                     src={URL.createObjectURL(photo)}
-                    alt={`Product ${index + 1}`}
+                    alt={`Producto ${index + 1}`}
                     className="w-full h-32 object-cover rounded-md"
                   />
                   <button

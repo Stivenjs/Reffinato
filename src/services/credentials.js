@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 const firebaseConfig = {
-  apiKey: "AIzaSyDJy7wxYiDYj7dajf94_w58Nh-KGvZI4Ac",
-  authDomain: "reffinato-6bad3.firebaseapp.com",
-  projectId: "reffinato-6bad3",
-  storageBucket: "reffinato-6bad3.appspot.com",
-  messagingSenderId: "970843907048",
-  appId: "1:970843907048:web:16748f2f9fb9efe3743a5d",
-  measurementId: "G-7NT5SX3REX",
+  apiKey: "AIzaSyCMQWxIb0heLm1wH9z_49ILxuECMk_JW8o",
+  authDomain: "reffinato-shop.firebaseapp.com",
+  projectId: "reffinato-shop",
+  storageBucket: "reffinato-shop.firebasestorage.app",
+  messagingSenderId: "667422132503",
+  appId: "1:667422132503:web:b147d4f98b3f8535bacf52",
+  measurementId: "G-WV6K0KBBJQ",
 };
 
 const app = initializeApp(firebaseConfig);

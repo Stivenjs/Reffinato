@@ -67,6 +67,15 @@ export default function UserMenu() {
     setIsOpen(false);
   };
 
+  // Renderiza el componente UserMenu solo si hay un usuario autenticado
+  if (!user) {
+    return (
+      <Link to="/login" className="text-primary">
+        Log In
+      </Link>
+    );
+  }
+
   return (
     <div className="relative font-bold" ref={menuRef}>
       <Tooltip>
@@ -97,8 +106,7 @@ export default function UserMenu() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className={`
-              fixed sm:absolute 
+            className={`fixed sm:absolute 
               ${isMobile ? "inset-x-4 top-16" : "right-0 mt-2"} 
               w-auto sm:w-56 rounded-md shadow-lg bg-white 
               ring-1 ring-black ring-opacity-5 focus:outline-none z-50

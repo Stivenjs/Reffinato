@@ -16,14 +16,19 @@ export function useOrderSubmission() {
     setError(null);
 
     try {
+      // Ensure each cart item includes its color
+      const cartWithColors = cart.map((item) => ({
+        ...item,
+        color: item.color || "default", // Use 'default' if color is not set
+      }));
+
       const response = await axiosInstance.post("/orders", {
         userId,
-        cart,
+        cart: cartWithColors,
         totalAmount,
         shippingAddress,
         paypalTransactionId,
       });
-      console.log("Order created:", response);
 
       if (response.status === 201) {
         return response.data.order;

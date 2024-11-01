@@ -124,17 +124,18 @@ const AdminOrderDetails = (props) => {
               </div>
             ))}
             <b className="mb-2 text-lg">Purchased products</b>
-            <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
+            <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
               <b>Image</b>
               <b>Name</b>
               <b>Size</b>
+              <b>Color</b>
               <b>Amount</b>
             </div>
             {orderDetails.map((item, index) =>
               item.cart.map((cartItem, x) => (
                 <div
-                  key={index}
-                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-[1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
+                  key={x}
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-[1fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
                 >
                   <img
                     src={cartItem.photos[0]}
@@ -147,8 +148,16 @@ const AdminOrderDetails = (props) => {
                   <p className="hidden sm:block text-xs sm:text-sm md:text-base">
                     {cartItem.size}
                   </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: cartItem.color }}
+                      title={cartItem.color}
+                    ></div>
+                    <strong></strong> {cartItem.color}
+                  </div>
                   <p className="text-xs sm:text-sm md:text-base">
-                    {cartItem.price}
+                    ${cartItem.price}
                   </p>
                 </div>
               ))

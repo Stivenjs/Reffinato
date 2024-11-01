@@ -1,4 +1,4 @@
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
@@ -31,6 +31,7 @@ export default function ProductDetails() {
   const location = useLocation();
   const { data: product, isLoading, isError } = useProductById(id);
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
   const [isZoomed, setIsZoomed] = useState(false);
@@ -39,6 +40,7 @@ export default function ProductDetails() {
   const [openSection, setOpenSection] = useState(null);
   const { toast } = useToast();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const { data: subscription } = useSubscription(user?.uid);
   const [discountPercentage, setDiscountPercentage] = useState(0);
 
@@ -55,6 +57,9 @@ export default function ProductDetails() {
   useEffect(() => {
     if (product) {
       setMainImage(product.photos[0]);
+      if (product.colors && product.colors.length > 0) {
+        setSelectedColor(product.colors[0]);
+      }
     }
   }, [product]);
 
@@ -92,7 +97,12 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
-    if (selectedSize) {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (selectedSize && selectedColor) {
       const discountedPrice = calculateDiscountedPrice(
         product.price,
         discountPercentage
@@ -105,16 +115,18 @@ export default function ProductDetails() {
         discountPercentage: discountPercentage,
       };
 
-      addToCart(productWithDiscount, selectedSize, quantity);
+      // Pass selectedColor as the fourth argument
+      addToCart(productWithDiscount, selectedSize, quantity, selectedColor);
+
       toast({
         title: "Added to cart",
-        description: `${quantity} ${product.name} (Size: ${selectedSize}) added to cart`,
+        description: `${quantity} ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}) added to cart`,
       });
     } else {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please select a size before adding to cart",
+        description: "Please select a size and color before adding to cart",
       });
     }
   };
@@ -182,9 +194,6 @@ export default function ProductDetails() {
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
-          <p className="text-lg md:text-xl text-gray-600 mt-2">
-            {product.color}
-          </p>
           <div className="mt-4">
             {discountPercentage > 0 ? (
               <>
@@ -197,8 +206,31 @@ export default function ProductDetails() {
                 </p>
               </>
             ) : (
-              <p className="text-xl md:text-2xl font-bold">
-                ${product.price}
+              <p className="text-xl md:text-2xl font-bold">${product.price}</p>
+            )}
+          </div>
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Color
+            </label>
+            <div className="flex space-x-2">
+              {product.colors.map((color) => (
+                <button
+                  key={color}
+                  className={`w-8 h-8 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    selectedColor === color
+                      ? "ring-2 ring-offset-2 ring-gray-500"
+                      : ""
+                  }`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
+                  aria-label={`Select ${color} color`}
+                />
+              ))}
+            </div>
+            {selectedColor && (
+              <p className="mt-2 text-sm text-gray-500">
+                Selected: {selectedColor}
               </p>
             )}
           </div>
@@ -302,9 +334,7 @@ export default function ProductDetails() {
               )}
             </button>
             {openSection === "details" && (
-              <p className="mt-4 text-sm text-gray-700">
-                {product.description}
-              </p>
+              <p className="mt-4 text-sm text-gray-700">{product.details}</p>
             )}
           </div>
         </div>

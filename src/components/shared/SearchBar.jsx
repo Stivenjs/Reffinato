@@ -143,7 +143,7 @@ export default function Component({ onClose }) {
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
-                      {category === "all" ? "All Categories" : category}
+                      {category === "all" ? "All " : category}
                     </option>
                   ))}
                 </select>
@@ -163,7 +163,7 @@ export default function Component({ onClose }) {
                 >
                   {sizes.map((size) => (
                     <option key={size} value={size}>
-                      {size === "all" ? "All Sizes" : size}
+                      {size === "all" ? "All " : size}
                     </option>
                   ))}
                 </select>

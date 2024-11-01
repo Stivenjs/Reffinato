@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Menu, Search } from "lucide-react";
+import { Heart, Menu, Search, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -13,12 +13,14 @@ import WordRotate from "@/components/ui/word-rotate";
 import UserMenu from "../shared/UserMenu";
 import Cart from "@/components/shared/Cart";
 import SearchBar from "./SearchBar";
+import EnhancedFixedChatWindow from "../../pages/chat/AdminChat";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
   const cartRef = useRef(null);
 
@@ -65,6 +67,10 @@ export default function Header() {
     navigate("/profile?section=wishlist");
   };
 
+  const handleChatOpen = () => {
+    setIsChatOpen(true);
+  };
+
   return (
     <TooltipProvider>
       <motion.nav
@@ -97,8 +103,12 @@ export default function Header() {
                 <div>New collection 2024</div>
               </div>
               <div className="bg-gray-100 py-2 px-4 text-xs md:text-sm flex justify-between items-center">
-                <div className="flex items-center">
+                <div
+                  className="flex items-center cursor-pointer"
+                  onClick={handleChatOpen}
+                >
                   <span className="mr-4">Do you need help?</span>
+                  <MessageCircle className="h-5 w-5" />
                 </div>
                 <div className="flex items-center">
                   <span>POINT OF SALE</span>
@@ -259,6 +269,12 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Chat Window */}
+      <EnhancedFixedChatWindow
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
     </TooltipProvider>
   );
 }

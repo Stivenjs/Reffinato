@@ -5,17 +5,17 @@ import axiosInstance from "@/instances/axiosInstance";
 const useCartStore = create((set, get) => ({
   cartItems: [],
 
-  addToCart: async (product, size, quantity) => {
+  addToCart: async (product, size, quantity, color) => {
     try {
       const { user } = useAuthStore.getState();
       const { id, name, price, photos } = product;
-      console.log(user)
-      console.log(id, name, price, photos);
+
       const response = await axiosInstance.post("/cart/add", {
         userId: user.uid,
         productId: id,
         quantity,
         size,
+        color,
         price,
         productName: name,
         photos,

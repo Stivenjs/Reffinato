@@ -149,6 +149,9 @@ export default function MyOrders() {
                                   <p className="text-sm text-gray-500">
                                     Price: ${item.price}
                                   </p>
+                                  <p className="text-sm text-gray-500">
+                                    Color: {item.color}
+                                  </p>
                                 </div>
                               </div>
                             ))}

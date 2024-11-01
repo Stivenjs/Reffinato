@@ -8,6 +8,7 @@ const useFavoriteStore = create(
       userFavorites: {},
       addToFavorites: (product) => {
         const { user } = useAuthStore.getState();
+        if (!user) return; // Verificar si el usuario está autenticado
         set((state) => {
           const updatedFavorites = {
             ...state.userFavorites,
@@ -20,6 +21,7 @@ const useFavoriteStore = create(
       },
       removeFromFavorites: (productId) => {
         const { user } = useAuthStore.getState();
+        if (!user) return; // Verificar si el usuario está autenticado
         set((state) => {
           const updatedFavorites = {
             ...state.userFavorites,
@@ -34,11 +36,13 @@ const useFavoriteStore = create(
       },
       isFavorite: (productId) => {
         const { user } = useAuthStore.getState();
+        if (!user) return false; // Si no hay usuario, no puede ser favorito
         const userFavorites = get().userFavorites[user.uid] || [];
         return userFavorites.some((item) => item.id === productId);
       },
       getUserFavorites: () => {
         const { user } = useAuthStore.getState();
+        if (!user) return []; // Si no hay usuario, retorna un array vacío
         return get().userFavorites[user.uid] || [];
       },
       // Nuevo método para notificar a los suscriptores

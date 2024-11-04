@@ -30,6 +30,7 @@ export default function ShoppingCarts() {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const { submitOrder, isSubmitting, error } = useOrderSubmission();
+  const [expandedItems, setExpandedItems] = useState({});
 
   const total = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -67,7 +68,7 @@ export default function ShoppingCarts() {
 
     const order = await submitOrder(
       userId,
-      cartItems, 
+      cartItems,
       total,
       formattedAddress,
       details.id
@@ -102,6 +103,13 @@ export default function ShoppingCarts() {
   const handleCloseAlert = () => {
     setShowAlert(false);
     navigate("/profile?section=orders");
+  };
+
+  const toggleItemDetails = (itemId) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
   };
 
   if (cartItems.length === 0 && !showAlert) {
@@ -176,10 +184,27 @@ export default function ShoppingCarts() {
                   <p className="text-sm text-gray-600">${item.price}</p>
                   <p className="text-sm text-gray-600">Size: {item.size}</p>
                   <p className="text-sm text-gray-600">Color: {item.color}</p>
-                  <button className="text-sm text-gray-600 flex items-center mt-2">
+
+                  <button
+                    className="text-sm text-gray-600 flex items-center mt-2"
+                    onClick={() => toggleItemDetails(item.id)}
+                  >
                     More Details{" "}
-                    <ChevronDown className="w-4 h-4 ml-1" aria-hidden="true" />
+                    {expandedItems[item.id] ? (
+                      <ChevronUp className="w-4 h-4 ml-1" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown
+                        className="w-4 h-4 ml-1"
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
+                  {expandedItems[item.id] && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      Pre Order: Your order will take an approximate of two
+                      months when preordered!
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col items-end">
                   <div className="flex items-center border rounded">

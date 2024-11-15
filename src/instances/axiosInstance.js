@@ -13,7 +13,7 @@ axiosInstance.interceptors.request.use(
 
     if (user) {
       try {
-        const token = await user.getIdToken(true); // Forzar la actualización del token
+        const token = await user.getIdToken(true); 
         config.headers.Authorization = `Bearer ${token}`;
       } catch (error) {
         console.error("Error al obtener un nuevo token:", error);

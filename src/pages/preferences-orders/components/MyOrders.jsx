@@ -135,8 +135,8 @@ export default function MyOrders() {
                                 <img
                                   src={item.photos[0] || "/placeholder.svg"}
                                   alt={item.product_name}
-                                  width={60}
-                                  height={60}
+                                  width={200}
+                                  height={200}
                                   className="rounded-md object-cover"
                                 />
                                 <div>

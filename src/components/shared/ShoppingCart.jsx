@@ -14,7 +14,6 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useOrderSubmission } from "@/hooks/useOrderSubmission";
-import axiosInstance from "@/instances/axiosInstance";
 import useAuthStore from "@/store/authStore";
 import useCartStore from "@/store/cartStore";
 
@@ -25,7 +24,6 @@ export default function ShoppingCarts() {
   const [showAlert, setShowAlert] = useState(false);
   const [payerName, setPayerName] = useState("");
   const [shippingAddress, setShippingAddress] = useState(null);
-  const [paypalClientId, setPaypalClientId] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuthStore();
@@ -36,19 +34,6 @@ export default function ShoppingCarts() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  useEffect(() => {
-    const fetchClientId = async () => {
-      try {
-        const response = await axiosInstance("/paypal-client-id");
-        setPaypalClientId(response.data.clientId);
-      } catch (error) {
-        console.error("Error fetching PayPal client ID:", error);
-      }
-    };
-
-    fetchClientId();
-  }, []);
 
   const handlePaymentSuccess = async (details, data) => {
     const userId = user.uid;
@@ -285,8 +270,16 @@ export default function ShoppingCarts() {
             </div>
 
             {!paymentComplete && (
-              <PayPalScriptProvider options={{ "client-id": paypalClientId }}>
+              <PayPalScriptProvider
+                options={{
+                  "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
+                  locale: "en_US",
+                }}
+              >
                 <PayPalButtons
+                  style={{
+                    label: "pay",
+                  }}
                   createOrder={(data, actions) => {
                     return actions.order.create({
                       purchase_units: [

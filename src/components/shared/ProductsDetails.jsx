@@ -1,7 +1,8 @@
-import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   Heart,
   Share2,
   Loader2,
@@ -115,7 +116,6 @@ export default function ProductDetails() {
         discountPercentage: discountPercentage,
       };
 
-      // Pass selectedColor as the fourth argument
       addToCart(productWithDiscount, selectedSize, quantity, selectedColor);
 
       toast({
@@ -156,11 +156,47 @@ export default function ProductDetails() {
     discountPercentage
   );
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const productUrl = `${window.location.origin}/product/${id}`;
+
+  const handleShare = (platform) => {
+    let shareUrl;
+    const encodedProductUrl = encodeURIComponent(productUrl);
+    const encodedMessage = encodeURIComponent(
+      `Check out this product: ${product.name}`
+    );
+
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedProductUrl}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodedProductUrl}&text=${encodedMessage}`;
+        break;
+      case "instagram":
+        shareUrl = "https://www.instagram.com/";
+        break;
+      default:
+        return;
+    }
+
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+    setIsShareMenuOpen(false);
+  };
+
   return (
     <div className="container mx-auto px-15 md:px-8 lg:px-16 py-20 mt-24">
-      <Link to="/products" className="hover:underline mb-4 inline-block">
-        &larr; Back to products
-      </Link>
+      <button
+        className="mb-6 flex items-center gap-2 text-lg font-semibold  hover:text-gray-900 transition-colors duration-200"
+        onClick={handleGoBack}
+      >
+        <ChevronLeft className="h-5 w-5" />
+        Back
+      </button>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="relative overflow-hidden">
           <div
@@ -198,15 +234,17 @@ export default function ProductDetails() {
             {discountPercentage > 0 ? (
               <>
                 <p className="text-xl md:text-2xl font-bold line-through text-gray-500">
-                  ${product.price}
+                  ${Number(product.price).toFixed(2)}
                 </p>
                 <p className="text-xl md:text-2xl font-bold text-red-600">
-                  ${discountedPrice}{" "}
-                  <span className="text-sm">({discountPercentage}% off)</span>
+                  ${Number(discountedPrice).toFixed(2)}
                 </p>
               </>
             ) : (
-              <p className="text-xl md:text-2xl font-bold">${product.price}</p>
+              <p className="text-xl md:text-2xl font-bold">
+                {" "}
+                ${Number(product.price).toFixed(2)}
+              </p>
             )}
           </div>
           <div className="mt-6">
@@ -279,24 +317,24 @@ export default function ProductDetails() {
               </button>
               {isShareMenuOpen && (
                 <div className="absolute right-0 mt-2 py-2 w-48 bg-white shadow-xl z-20">
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  <button
+                    onClick={() => handleShare("facebook")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Facebook className="w-4 h-4 mr-2" /> Facebook
-                  </a>
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  </button>
+                  <button
+                    onClick={() => handleShare("twitter")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Twitter className="w-4 h-4 mr-2" /> Twitter
-                  </a>
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  </button>
+                  <button
+                    onClick={() => handleShare("instagram")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Instagram className="w-4 h-4 mr-2" /> Instagram
-                  </a>
+                  </button>
                 </div>
               )}
             </div>

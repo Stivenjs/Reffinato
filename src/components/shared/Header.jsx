@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Heart, Menu, Search, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -22,6 +22,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const cartRef = useRef(null);
 
   useEffect(() => {
@@ -56,7 +57,14 @@ export default function Header() {
 
   const handleMenuItemClick = (item) => {
     if (item.category) {
-      navigate(item.to, { state: { category: item.category } });
+      if (location.pathname === "/products") {
+        navigate(item.to, {
+          state: { category: item.category },
+          replace: true,
+        });
+      } else {
+        navigate(item.to, { state: { category: item.category } });
+      }
     } else {
       navigate(item.to);
     }

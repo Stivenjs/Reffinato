@@ -5,33 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import useAuthStore from "@/store/authStore";
-import axiosInstance from "@/instances/axiosInstance";
+import { CheckCircle } from "lucide-react";
 
 export default function RefinnatoGold() {
   const [isHovered, setIsHovered] = useState(false);
   const [alert, setAlert] = useState(null);
-  const [paypalClientId, setPaypalClientId] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { subscribe, isLoading, error, success } = useSubscribe();
-
-  useEffect(() => {
-    const fetchClientId = async () => {
-      try {
-        const response = await axiosInstance.get("/paypal-client-id");
-        setPaypalClientId(response.data.clientId);
-      } catch (error) {
-        console.error("Error fetching PayPal client ID:", error);
-        setAlert({
-          type: "error",
-          message:
-            "Error loading PayPal. Please refresh the page or try again later.",
-        });
-      }
-    };
-
-    fetchClientId();
-  }, []);
 
   const handlePaymentSuccess = useCallback(
     async (details) => {
@@ -80,77 +61,96 @@ export default function RefinnatoGold() {
     }
   }, [error]);
 
-  if (!paypalClientId) {
-    return <div>Loading PayPal...</div>;
-  }
-
   return (
     <PayPalScriptProvider
       options={{
-        "client-id": paypalClientId,
+        "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID,
+        locale: "en_US",
       }}
     >
-      <motion.div
-        className="max-w-sm mx-auto bg-white rounded-lg shadow-lg overflow-hidden mt-16"
-        initial={{ scale: 1 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 300 }}
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-      >
-        <div className="px-20 py-32">
-          {alert && (
-            <Alert
-              variant={alert.type === "success" ? "default" : "destructive"}
-              className="mb-4"
-            >
-              <AlertTitle>
-                {alert.type === "success" ? "Success" : "Error"}
-              </AlertTitle>
-              <AlertDescription>{alert.message}</AlertDescription>
-            </Alert>
-          )}
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Reffinato Gold
-          </h2>
-          <div className="text-center mb-8">
-            <p className="text-xl text-gray-600 mb-2">Gold</p>
-            <p className="text-5xl font-bold">$25</p>
-            <p className="text-sm text-gray-500">Every year</p>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <motion.div
+          className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden"
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.02 }}
+          onHoverStart={() => setIsHovered(true)}
+          onHoverEnd={() => setIsHovered(false)}
+        >
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/2 bg-gray-50 p-12">
+              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+                Reffinato Gold
+              </h2>
+              <p className="text-xl text-gray-600 mb-6">
+                Elevate your shopping experience
+              </p>
+              <ul className="space-y-4">
+                {[
+                  "25% discount on selected products",
+                  "Free shipping",
+                  "Exclusive access to premium items",
+                  "Priority customer support",
+                ].map((benefit, index) => (
+                  <li key={index} className="flex items-center text-gray-700">
+                    <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="md:w-1/2 p-12">
+              {alert && (
+                <Alert
+                  variant={alert.type === "success" ? "default" : "destructive"}
+                  className="mb-6"
+                >
+                  <AlertTitle>
+                    {alert.type === "success" ? "Success" : "Error"}
+                  </AlertTitle>
+                  <AlertDescription>{alert.message}</AlertDescription>
+                </Alert>
+              )}
+              <div className="text-center mb-8">
+                <p className="text-5xl font-bold text-gray-800">$25</p>
+                <p className="text-xl text-gray-600">per year</p>
+              </div>
+              <p className="text-center text-gray-600 mb-8">
+                Get up to 25% discount and free shipping on selected products
+                with the Gold membership!
+              </p>
+              {isLoading && (
+                <p className="text-center text-gray-600 mb-4">
+                  Processing your subscription...
+                </p>
+              )}
+              <PayPalButtons
+                createOrder={(data, actions) => {
+                  return actions.order.create({
+                    purchase_units: [
+                      {
+                        amount: {
+                          value: "25.00",
+                        },
+                      },
+                    ],
+                  });
+                }}
+                onApprove={(data, actions) => {
+                  return actions.order.capture().then((details) => {
+                    handlePaymentSuccess(details);
+                  });
+                }}
+                onError={(err) => {
+                  handlePaymentError(err);
+                }}
+                style={{ layout: "vertical", shape: "rect", label: "pay" }}
+              />
+            </div>
           </div>
-          <p className="text-center text-gray-600 mb-8">
-            Get up to 25% discount and free shipping on selected products with
-            the Gold membership!
-          </p>
-          {isLoading && (
-            <p className="text-center text-gray-600 mb-4">
-              Processing your subscription...
-            </p>
-          )}
-          <PayPalButtons
-            createOrder={(data, actions) => {
-              return actions.order.create({
-                purchase_units: [
-                  {
-                    amount: {
-                      value: "25.00",
-                    },
-                  },
-                ],
-              });
-            }}
-            onApprove={(data, actions) => {
-              return actions.order.capture().then((details) => {
-                handlePaymentSuccess(details);
-              });
-            }}
-            onError={(err) => {
-              handlePaymentError(err);
-            }}
-            style={{ layout: "vertical", shape: "rect" }}
-          />
-        </div>
-      </motion.div>
+        </motion.div>t
+      </div>
     </PayPalScriptProvider>
   );
 }

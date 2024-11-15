@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { X, ArrowLeft, Trash2 } from "lucide-react";
+import { X, ArrowLeft, Trash2, Send } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import axiosInstance from "@/instances/axiosInstance";
 import useAuthStore from "@/store/authStore";
@@ -64,7 +64,6 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
     });
 
     newSocket.on("connect", () => {
-      console.log("Connected to server");
       if (user.uid === ADMIN_UID) {
         newSocket.emit("admin login", ADMIN_UID);
       } else {
@@ -73,7 +72,6 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
     });
 
     newSocket.on("disconnect", (reason) => {
-      console.log("Disconnected from server:", reason);
       if (reason === "io server disconnect") {
         newSocket.connect();
       }
@@ -233,7 +231,7 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
         <span
           className={`inline-block p-2 rounded-lg ${
             msg.sender === user.displayName
-              ? "bg-blue-500 text-white"
+              ? "bg-[#a0501a] text-white"
               : "bg-gray-200"
           }`}
         >
@@ -248,13 +246,22 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
   return (
     <Card className="fixed bottom-4 right-4 w-80 h-96 flex flex-col overflow-hidden z-50 shadow-lg">
       <CardHeader className="p-4 flex-shrink-0 flex justify-between items-center bg-gray-100 relative">
-        <CardTitle className="text-sm font-medium text-gray-900">
-          {user.uid === ADMIN_UID
-            ? selectedUser
-              ? `Chat with ${selectedUser}`
-              : "User List"
-            : "Support Chat"}
-        </CardTitle>
+        <div className="p-4">
+          <CardTitle className="text-sm font-medium text-gray-900 flex items-center">
+            {user.uid === ADMIN_UID ? (
+              selectedUser ? (
+                <>Chat with {selectedUser} </>
+              ) : (
+                "User List - Select a user to start chatting"
+              )
+            ) : (
+              <>
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+                Live Support Chat - An agent is available to assist you
+              </>
+            )}
+          </CardTitle>
+        </div>
         {user.uid === ADMIN_UID && selectedUser && (
           <Button
             variant="ghost"
@@ -313,11 +320,12 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
               className="flex-grow"
             />
             <Button
+              variant="ghost"
               type="submit"
               size="sm"
-              className="bg-blue-500 text-white hover:bg-blue-600"
+              className="text-black"
             >
-              Send
+              <Send />
             </Button>
           </form>
         </CardFooter>

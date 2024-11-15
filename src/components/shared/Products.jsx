@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
-import { useProductsByCategory } from "@/hooks/useProductsByCategory";
+import React, { useState, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useProducts } from "@/hooks/useProducts";
 import { useSubscription } from "@/hooks/fetchSucriptions";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
@@ -51,18 +51,18 @@ function ProductCard({ product, index, discountPercentage }) {
               {product.name}
             </h2>
             <p className="text-sm md:text-base text-gray-600">
-              {product.color}
+              {product.colors[0]}
             </p>
             <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
               {discountPercentage > 0 ? (
                 <>
                   <span className="line-through text-gray-500 mr-2">
-                    ${product.price}
+                    ${Number(product.price).toFixed(2)}
                   </span>
-                  ${discountedPrice}
+                  ${Number(discountedPrice).toFixed(2)}
                 </>
               ) : (
-                `$${product.price}`
+                `$${Number(product.price).toFixed(2)}`
               )}
             </p>
           </div>
@@ -74,23 +74,9 @@ function ProductCard({ product, index, discountPercentage }) {
 
 function CustomSelect({ value, onChange, options }) {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref]);
 
   return (
-    <div className="relative inline-block text-left w-full" ref={ref}>
+    <div className="relative inline-block text-left w-full">
       <button
         type="button"
         className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -128,19 +114,26 @@ function CustomSelect({ value, onChange, options }) {
 }
 
 export default function Products() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("featured");
-  const categories = ["Bikini", "Swimsuits", "Beachwear"];
-  const selectedCategory = categories[activeTab];
+  const categories = ["All", "Bikini", "Swimsuits", "Beachwear"];
   const { user } = useAuthStore();
   const { data: subscription } = useSubscription(user?.uid);
 
-  const {
-    data: products,
-    isLoading,
-    error,
-  } = useProductsByCategory(selectedCategory);
+  const { data: products, isLoading, error } = useProducts();
+
+  // Obtener la categoría seleccionada del estado de la ubicación
+  const selectedCategory = location.state?.category || "All";
+
+  // Actualizar el activeTab basado en la categoría seleccionada
+  React.useEffect(() => {
+    const index = categories.indexOf(selectedCategory);
+    if (index !== -1) {
+      setActiveTab(index);
+    }
+  }, [selectedCategory]);
 
   const weeklyDiscounts = useMemo(() => {
     return calculateWeeklyDiscounts(
@@ -155,6 +148,12 @@ export default function Products() {
     let filtered = products.filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    if (activeTab !== 0) {
+      filtered = filtered.filter(
+        (product) => product.category === categories[activeTab]
+      );
+    }
 
     switch (sortOption) {
       case "priceLowToHigh":
@@ -174,7 +173,7 @@ export default function Products() {
     }
 
     return filtered;
-  }, [products, searchTerm, sortOption]);
+  }, [products, searchTerm, sortOption, activeTab, categories]);
 
   if (isLoading) {
     return (

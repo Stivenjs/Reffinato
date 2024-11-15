@@ -22,6 +22,7 @@ export default function Component({ onClose }) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsResultsOpen(false);
         setIsFilterOpen(false);
+        setResults([])
       }
     }
 
@@ -55,7 +56,7 @@ export default function Component({ onClose }) {
           filterSize === "all" || product.sizes.includes(filterSize);
         return nameMatch && categoryMatch && sizeMatch;
       })
-      .slice(0, 4); // Limit to 4 results
+      .slice(0, 3);
 
     setResults(filteredResults);
     setIsSearching(false);

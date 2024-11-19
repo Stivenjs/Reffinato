@@ -68,7 +68,7 @@ export default function RefinnatoGold() {
         locale: "en_US",
       }}
     >
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-48 px-4 sm:px-6 lg:px-8 ">
         <motion.div
           className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden"
           initial={{ scale: 0.95, opacity: 0 }}
@@ -149,7 +149,7 @@ export default function RefinnatoGold() {
               />
             </div>
           </div>
-        </motion.div>t
+        </motion.div>
       </div>
     </PayPalScriptProvider>
   );

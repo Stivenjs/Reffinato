@@ -46,17 +46,10 @@ export default function ProductDetails() {
   const [discountPercentage, setDiscountPercentage] = useState(0);
 
   useEffect(() => {
-    if (product && subscription && subscription.status === "active") {
+    if (product) {
       const weeklyDiscounts = calculateWeeklyDiscounts([product], true);
       const discount = getDiscountForProduct(product.id, weeklyDiscounts);
       setDiscountPercentage(discount);
-    } else if (location.state && location.state.discountPercentage) {
-      setDiscountPercentage(location.state.discountPercentage);
-    }
-  }, [product, subscription, location.state]);
-
-  useEffect(() => {
-    if (product) {
       setMainImage(product.photos[0]);
       if (product.colors && product.colors.length > 0) {
         setSelectedColor(product.colors[0]);
@@ -104,19 +97,19 @@ export default function ProductDetails() {
     }
 
     if (selectedSize && selectedColor) {
-      const discountedPrice = calculateDiscountedPrice(
-        product.price,
-        discountPercentage
-      );
+      const hasSubscription = subscription?.status === "active";
+      const finalPrice = hasSubscription
+        ? calculateDiscountedPrice(product.price, discountPercentage)
+        : product.price;
 
-      const productWithDiscount = {
+      const productToAdd = {
         ...product,
-        price: discountedPrice,
+        price: finalPrice,
         originalPrice: product.price,
-        discountPercentage: discountPercentage,
+        discountPercentage: hasSubscription ? discountPercentage : 0,
       };
 
-      addToCart(productWithDiscount, selectedSize, quantity, selectedColor);
+      addToCart(productToAdd, selectedSize, quantity, selectedColor);
 
       toast({
         title: "Added to cart",
@@ -132,22 +125,22 @@ export default function ProductDetails() {
   };
 
   const handleFavoriteClick = () => {
-    const discountedPrice = calculateDiscountedPrice(
-      product.price,
-      discountPercentage
-    );
+    const hasSubscription = subscription?.status === "active";
+    const finalPrice = hasSubscription
+      ? calculateDiscountedPrice(product.price, discountPercentage)
+      : product.price;
 
-    const productWithDiscount = {
+    const productToFavorite = {
       ...product,
-      price: discountedPrice,
+      price: finalPrice,
       originalPrice: product.price,
-      discountPercentage: discountPercentage,
+      discountPercentage: hasSubscription ? discountPercentage : 0,
     };
 
     if (isFavorite(product.id)) {
       removeFromFavorites(product.id);
     } else {
-      addToFavorites(productWithDiscount);
+      addToFavorites(productToFavorite);
     }
   };
 
@@ -231,8 +224,11 @@ export default function ProductDetails() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
           <div className="mt-4">
-            {discountPercentage > 0 ? (
+            {subscription?.status === "active" ? (
               <>
+                <p className="text-xl md:text-2xl font-bold">
+                  {discountPercentage}% OFF
+                </p>
                 <p className="text-xl md:text-2xl font-bold line-through text-gray-500">
                   ${Number(product.price).toFixed(2)}
                 </p>
@@ -241,10 +237,14 @@ export default function ProductDetails() {
                 </p>
               </>
             ) : (
-              <p className="text-xl md:text-2xl font-bold">
-                {" "}
-                ${Number(product.price).toFixed(2)}
-              </p>
+              <>
+                <p className="text-xl md:text-2xl font-bold">
+                  ${Number(product.price).toFixed(2)}
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  Reffinato Gold: ${Number(discountedPrice).toFixed(2)}
+                </p>
+              </>
             )}
           </div>
           <div className="mt-6">

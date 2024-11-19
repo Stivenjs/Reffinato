@@ -28,7 +28,7 @@ const AdminOrdenedProducts = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
+    <div className="flex flex-col md:flex-row ">
       <SideBar />
       <div className="flex flex-col gap-2 w-full md:w-[80%] mt-24 mb-9 relative md:left-3 px-4">
         <b className="mb-2 text-lg mt-16">Products list</b>

@@ -13,7 +13,7 @@ import {
 } from "./discountLogic";
 import Banner from "./Bannner";
 
-function ProductCard({ product, index, discountPercentage }) {
+function ProductCard({ product, index, discountPercentage, hasSubscription }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const discountedPrice = calculateDiscountedPrice(
@@ -40,7 +40,7 @@ function ProductCard({ product, index, discountPercentage }) {
               }`}
               className="w-full h-60 md:h-72 lg:h-96 object-cover transition-opacity duration-300"
             />
-            {discountPercentage > 0 && (
+            {hasSubscription && discountPercentage > 0 && (
               <div className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded">
                 {discountPercentage}% OFF
               </div>
@@ -53,18 +53,23 @@ function ProductCard({ product, index, discountPercentage }) {
             <p className="text-sm md:text-base text-gray-600">
               {product.colors[0]}
             </p>
-            <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
-              {discountPercentage > 0 ? (
-                <>
-                  <span className="line-through text-gray-500 mr-2">
-                    ${Number(product.price).toFixed(2)}
-                  </span>
-                  ${Number(discountedPrice).toFixed(2)}
-                </>
-              ) : (
-                `$${Number(product.price).toFixed(2)}`
-              )}
-            </p>
+            {hasSubscription ? (
+              <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
+                <span className="line-through text-gray-500 mr-2">
+                  ${Number(product.price).toFixed(2)}
+                </span>
+                ${Number(discountedPrice).toFixed(2)}
+              </p>
+            ) : (
+              <>
+                <p className="text-base md:text-lg lg:text-xl font-bold mt-2">
+                  ${Number(product.price).toFixed(2)}
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  Reffinato Gold: ${Number(discountedPrice).toFixed(2)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </Link>
@@ -124,10 +129,8 @@ export default function Products() {
 
   const { data: products, isLoading, error } = useProducts();
 
-  // Obtener la categoría seleccionada del estado de la ubicación
   const selectedCategory = location.state?.category || "All";
 
-  // Actualizar el activeTab basado en la categoría seleccionada
   React.useEffect(() => {
     const index = categories.indexOf(selectedCategory);
     if (index !== -1) {
@@ -136,11 +139,8 @@ export default function Products() {
   }, [selectedCategory]);
 
   const weeklyDiscounts = useMemo(() => {
-    return calculateWeeklyDiscounts(
-      products,
-      subscription?.status === "active"
-    );
-  }, [products, subscription]);
+    return calculateWeeklyDiscounts(products, true);
+  }, [products]);
 
   const filteredAndSortedProducts = useMemo(() => {
     if (!products) return [];
@@ -265,6 +265,7 @@ export default function Products() {
                         product.id,
                         weeklyDiscounts
                       )}
+                      hasSubscription={subscription?.status === "active"}
                     />
                   ))}
                 </div>

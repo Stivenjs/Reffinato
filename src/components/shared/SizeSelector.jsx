@@ -21,7 +21,7 @@ export default function SizeSelector({ onSizeChange, sizes = [] }) {
         Size
       </label>
       <div
-        className="border border-gray-300 rounded-md"
+        className="border border-gray-300"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between p-2 cursor-pointer">
@@ -29,13 +29,13 @@ export default function SizeSelector({ onSizeChange, sizes = [] }) {
           {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </div>
         {isOpen && (
-          <ul className="absolute z-10 w-full bg-white border border-gray-300 border-t-0 rounded-b-md shadow-lg">
+          <ul className="absolute z-10 w-full bg-white border border-gray-300 border-t-1 rounded-b-md shadow-lg">
             {sizes.map((size, index) => (
               <li
                 key={index}
                 className={`p-2 cursor-pointer flex items-center justify-between ${
                   selectedSize === size
-                    ? "bg-teal-600 text-white"
+                    ? "bg-[#a0501a] text-white"
                     : "hover:bg-gray-200"
                 }`}
                 onClick={() => handleSizeSelect(size)}

@@ -157,7 +157,12 @@ export default function AdminProductForm() {
                     onChange={(e) => setNewColor(e.target.value)}
                     placeholder="Add colors"
                   />
-                  <Button type="button" onClick={handleAddColor} size="icon">
+                  <Button
+                    className="bg-[#a0501a] hover:bg-[#8b4513]"
+                    type="button"
+                    onClick={handleAddColor}
+                    size="icon"
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -188,7 +193,12 @@ export default function AdminProductForm() {
                     onChange={(e) => setNewSize(e.target.value)}
                     placeholder="Add size"
                   />
-                  <Button type="button" onClick={handleAddSize} size="icon">
+                  <Button
+                    className="bg-[#a0501a] hover:bg-[#8b4513]"
+                    type="button"
+                    onClick={handleAddSize}
+                    size="icon"
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -224,6 +234,7 @@ export default function AdminProductForm() {
                     className="hidden"
                   />
                   <Button
+                    className="bg-[#a0501a] hover:bg-[#8b4513]"
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                   >
@@ -273,7 +284,11 @@ export default function AdminProductForm() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full bg-[#a0501a] hover:bg-[#8b4513]"
+                disabled={loading}
+              >
                 {loading ? "Adding..." : "Add Product"}
               </Button>
             </form>

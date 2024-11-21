@@ -7,7 +7,7 @@ import AccountContent from "./components/AccountContent";
 import MyOrders from "./components/MyOrders";
 import MyAddresses from "./components/MyAdresses";
 import MyWallet from "./components/MyWallet";
-import MyWishlist from "./components/MyWishList";
+import MyWishlist from "./components/MyWishlist";
 import MySubscriptions from "./components/MySubscriptions";
 import CustomAlert from "@/components/shared/CustomAlert";
 

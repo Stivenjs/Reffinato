@@ -168,7 +168,13 @@ export default function ShoppingCarts() {
                   </Link>
                   <p className="text-sm text-gray-600">${item.price}</p>
                   <p className="text-sm text-gray-600">Size: {item.size}</p>
-                  <p className="text-sm text-gray-600">Color: {item.color}</p>
+                  <div className="flex gap-1">
+                    <p className="text-gray-500">Color: </p>
+                    <div
+                      className="w-6 h-6 rounded-full border border-gray-200"
+                      style={{ backgroundColor: item.color }}
+                    />
+                  </div>
 
                   <button
                     className="text-sm text-gray-600 flex items-center mt-2"

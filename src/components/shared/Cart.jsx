@@ -22,9 +22,15 @@ const CartItem = ({
         />
         <div>
           <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-gray-600">${item.price}</p>
-          <p className="text-gray-500">Size: {item.size}</p>
-          <p className="text-gray-500">Color: {item.color}</p>
+          <p>${item.price}</p>
+          <p>Size: {item.size}</p>
+          <div className="flex gap-1">
+            <p>Color: </p>
+            <div
+              className="w-6 h-6 rounded-full border border-gray-200"
+              style={{ backgroundColor: item.color }}
+            />
+          </div>
         </div>
       </div>
       <div className="flex items-center">

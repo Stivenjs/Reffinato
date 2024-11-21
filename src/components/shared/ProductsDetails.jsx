@@ -301,12 +301,23 @@ export default function ProductDetails() {
             Add to cart
           </button>
           <div className="mt-6 flex items-center justify-between">
-            <button onClick={handleFavoriteClick}>
+            <button
+              onClick={handleFavoriteClick}
+              className="group relative p-2 transition-all duration-300 hover:scale-110 "
+              aria-label={
+                isFavorite(product.id)
+                  ? "Remove from favorites"
+                  : "Add to favorites"
+              }
+            >
               <Heart
-                className={`h-6 w-6 ${
-                  isFavorite(product.id) ? "fill-[#a0501a]" : ""
+                className={`h-6 w-6 transition-colors duration-300 ${
+                  isFavorite(product.id)
+                    ? "fill-primary text-primary"
+                    : "text-black-400 group-hover:text-primary"
                 }`}
               />
+            
             </button>
             <div className="relative">
               <button

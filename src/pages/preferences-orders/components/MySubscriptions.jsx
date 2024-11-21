@@ -19,7 +19,10 @@ export default function MySubscriptions() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-2xl font-bold">My Subscription</CardTitle>
         {!isLoading && (
-          <Badge variant={subscription ? "default" : "secondary"}>
+          <Badge
+            className="bg-[#a0501a] hover:bg-[#8b4513] "
+            variant={subscription ? "default" : "secondary"}
+          >
             {subscription ? "Active" : "Inactive"}
           </Badge>
         )}

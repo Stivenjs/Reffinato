@@ -73,7 +73,10 @@ export default function AdminProductList() {
                     Manage your product inventory
                   </CardDescription>
                 </div>
-                <Button onClick={() => navigate("/admin/add-product")}>
+                <Button
+                  className="bg-[#a0501a] hover:bg-[#8b4513]"
+                  onClick={() => navigate("/admin/add-product")}
+                >
                   <Plus className="mr-2 h-4 w-4" /> Add Product
                 </Button>
               </CardHeader>
@@ -114,7 +117,7 @@ export default function AdminProductList() {
                             ))}
                           </div>
                         </TableCell>
-                        <TableCell>${item.price}</TableCell>
+                        <TableCell>${Number(item.price).toFixed(2)}</TableCell>
                         <TableCell>{item.sizes.join(", ")}</TableCell>
                         <TableCell>{item.category}</TableCell>
                         <TableCell className="text-right">

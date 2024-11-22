@@ -55,13 +55,16 @@ export default function EnhancedFixedChatWindow({ isOpen, onClose }) {
 
   const initializeSocket = useCallback(() => {
     if (!user || !user.uid) return;
-    const newSocket = io("http://localhost:3000", {
-      transports: ["websocket"],
-      upgrade: false,
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-    });
+    const newSocket = io(
+      "https://reffinato-backend-production.up.railway.app/",
+      {
+        transports: ["websocket"],
+        upgrade: false,
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+      }
+    );
 
     newSocket.on("connect", () => {
       if (user.uid === ADMIN_UID) {

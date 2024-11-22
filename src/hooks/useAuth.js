@@ -46,7 +46,7 @@ export const useAuth = () => {
       return { success: true };
     } catch (err) {
       console.error("Error al registrar:", err);
-      setError(err.response?.data?.message || "Error durante el registro");
+      setError(err.response?.data?.message || "Error during registration");
       setLoading(false);
       return { success: false, error: error };
     }

@@ -179,28 +179,29 @@ export default function Header() {
               <UserMenu />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={handleFavorite} variant="ghost" size="icon">
+                  <div onClick={handleFavorite} className="cursor-pointer">
                     <Heart className="h-5 w-5" />
-                  </Button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Favorite</p>
                 </TooltipContent>
               </Tooltip>
+
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
+                  <div
                     onClick={() => setIsCartOpen(true)}
-                    variant="ghost"
-                    size="icon"
+                    className="cursor-pointer"
                   >
                     <Cart className="h-5 w-5" />
-                  </Button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Cart</p>
                 </TooltipContent>
               </Tooltip>
+
               <span className="hidden md:inline">COLOMBIA</span>
               <Button
                 className="md:hidden"

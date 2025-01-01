@@ -30,10 +30,6 @@ export const useGoogleAuth = () => {
       setUser({ ...user, token });
       localStorage.setItem("token", token);
 
-      console.log("User logged in with Google and sent to backend:", {
-        ...user,
-        token,
-      });
       setLoading(false);
     } catch (err) {
       console.error("Error during Google sign-in:", err);

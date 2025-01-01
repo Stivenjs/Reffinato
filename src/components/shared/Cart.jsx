@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import useCartStore from "@/store/cartStore";
 import useAuthStore from "@/store/authStore";
 
@@ -88,17 +89,22 @@ const Cart = React.forwardRef(({ isOpen, onClose, onOpen }, ref) => {
     }
   }, [user, loadCart]);
 
-  const memoizedCartItems = useMemo(() => cartItems, [cartItems]);
+  const memoizedCartItems = useMemo(() => {
+    return Array.isArray(cartItems) ? cartItems : [];
+  }, [cartItems]);
 
   const totalPrice = useMemo(() => {
     return memoizedCartItems.reduce(
-      (sum, item) => sum + (item.price || 0) * item.quantity,
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
       0
     );
   }, [memoizedCartItems]);
 
   const itemCount = useMemo(() => {
-    return memoizedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+    return memoizedCartItems.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
+    );
   }, [memoizedCartItems]);
 
   const handleImageClick = (e, itemId) => {

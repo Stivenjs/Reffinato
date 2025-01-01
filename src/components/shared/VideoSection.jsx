@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const videos = [
   {
-    src: "https://reffinatotest.blob.core.windows.net/main-videos/Video de WhatsApp 2024-10-24 a las 19.07.36_6cb0093b.mp4",
+    src: "https://videos.pexels.com/video-files/1409899/1409899-uhd_2560_1440_25fps.mp4",
     phrase: "Discover beach elegance",
   },
   {
-    src: "https://reffinatotest.blob.core.windows.net/main-videos/Video de WhatsApp 2024-10-24 a las 19.07.42_156c3193.mp4",
+    src: "https://videos.pexels.com/video-files/3327058/3327058-hd_1920_1080_24fps.mp4",
     phrase: "Live summer in style",
   },
   {
-    src: "https://reffinatotest.blob.core.windows.net/main-videos/10493914-uhd_4096_2160_25fps.mp4",
+    src: "https://videos.pexels.com/video-files/3115738/3115738-uhd_2560_1440_24fps.mp4",
     phrase: "Feel the sea breeze",
   },
 ];

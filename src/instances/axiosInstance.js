@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAuth } from "firebase/auth";
 
 const axiosInstance = axios.create({
-  baseURL: "reffinato-backend-production.up.railway.app/api",
+  baseURL: "https://reffinato-backend-production.up.railway.app/api",
 });
 
 // Interceptor para agregar el token de autenticación
@@ -13,7 +13,7 @@ axiosInstance.interceptors.request.use(
 
     if (user) {
       try {
-        const token = await user.getIdToken(true); 
+        const token = await user.getIdToken(true);
         config.headers.Authorization = `Bearer ${token}`;
       } catch (error) {
         console.error("Error al obtener un nuevo token:", error);

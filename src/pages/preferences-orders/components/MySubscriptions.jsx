@@ -65,7 +65,7 @@ export default function MySubscriptions() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            You do not have any active subscriptions.
+            You don't have any active subscription.
           </p>
         )}
       </CardContent>

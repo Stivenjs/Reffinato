@@ -28,7 +28,6 @@ export default function UserMenu() {
   const navigate = useNavigate();
   const menuRef = useRef(null);
 
-  // Obtén el UID del admin desde la variable de entorno usando import.meta.env
   const adminUID = import.meta.env.VITE_ADMIN_UID;
 
   useEffect(() => {
@@ -53,11 +52,7 @@ export default function UserMenu() {
   }, []);
 
   const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
+    return name.split(" ")[0][0].toUpperCase();
   };
 
   const userInitial = user?.displayName ? getInitials(user.displayName) : "?";

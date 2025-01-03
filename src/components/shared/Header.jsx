@@ -111,13 +111,7 @@ export default function Header() {
                 <div>New collection 2024</div>
               </div>
               <div className="bg-gray-100 py-2 px-4 text-xs md:text-sm flex justify-between items-center">
-                <div
-                  className="flex items-center cursor-pointer"
-                  onClick={handleChatOpen}
-                >
-                  <span className="mr-4">Do you need help?</span>
-                  <MessageCircle className="h-5 w-5" />
-                </div>
+                <div className="flex items-center cursor-pointer"></div>
                 <div className="flex items-center">
                   <span>POINT OF SALE</span>
                 </div>
@@ -278,12 +272,6 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Chat Window */}
-      <EnhancedFixedChatWindow
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-      />
     </TooltipProvider>
   );
 }

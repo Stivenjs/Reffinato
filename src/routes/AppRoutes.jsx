@@ -22,6 +22,7 @@ import AdminProductList from "../pages/admin/AdminProductList";
 import AdminOrdenedProducts from "../pages/admin/AdminOrdenedProducts";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 
+
 function AppRoutes() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();

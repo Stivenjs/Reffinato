@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,8 +10,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { InfoIcon } from "lucide-react";
 
 export default function AccountContent({
   register,
@@ -21,6 +29,7 @@ export default function AccountContent({
   errors,
 }) {
   const { loading } = useUpdateProfile();
+  const [showSecurityTab, setShowSecurityTab] = useState(true);
   const [securityForm, setSecurityForm] = useState({
     email: "",
     currentPassword: "",
@@ -31,6 +40,27 @@ export default function AccountContent({
     newPassword: "",
     general: "",
   });
+
+  useEffect(() => {
+    const auth = getAuth();
+    const SOCIAL_PROVIDERS = ["google.com", "facebook.com"];
+
+    const handleAuthStateChange = (user) => {
+      if (!user) {
+        setShowSecurityTab(false);
+        return;
+      }
+
+      const hasSocialProvider = user.providerData.some((provider) =>
+        SOCIAL_PROVIDERS.includes(provider.providerId)
+      );
+
+      setShowSecurityTab(!hasSocialProvider);
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, handleAuthStateChange);
+    return () => unsubscribe();
+  }, []);
 
   const handleSecurityChange = (e) => {
     const { name, value } = e.target;
@@ -84,15 +114,33 @@ export default function AccountContent({
     <Card>
       <CardHeader>
         <CardTitle>Account</CardTitle>
-        <CardDescription>
-          View and edit your personal info below.
-        </CardDescription>
+        <div className="flex items-center space-x-2">
+          <CardDescription>
+            View and edit your personal info below.
+          </CardDescription>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>
+                  If you're authenticated with Google or Facebook and want to
+                  make security changes (like password or email), please do so
+                  through the respective platform.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            {showSecurityTab && (
+              <TabsTrigger value="security">Security</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="personal">
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -142,7 +190,6 @@ export default function AccountContent({
                   )}
                 </div>
               </div>
-
               <CardFooter className="flex flex-col sm:flex-row justify-between gap-4">
                 <Button type="submit" className="w-full sm:w-auto bg-[#a0501a]">
                   Update Info
@@ -150,60 +197,105 @@ export default function AccountContent({
               </CardFooter>
             </form>
           </TabsContent>
-          <TabsContent value="security">
-            <form className="space-y-4" onSubmit={handleSecuritySubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={securityForm.email}
-                  onChange={handleSecurityChange}
-                />
-                {securityErrors.email && (
-                  <p className="text-red-500 text-sm">{securityErrors.email}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input
-                  id="currentPassword"
-                  name="currentPassword"
-                  type="password"
-                  value={securityForm.currentPassword}
-                  onChange={handleSecurityChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  name="newPassword"
-                  type="password"
-                  value={securityForm.newPassword}
-                  onChange={handleSecurityChange}
-                />
-                {securityErrors.newPassword && (
+          {showSecurityTab && (
+            <TabsContent value="security">
+              <form className="space-y-4" onSubmit={handleSecuritySubmit}>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="email">Email</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            You can update your email without entering your
+                            current password.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={securityForm.email}
+                    onChange={handleSecurityChange}
+                  />
+                  {securityErrors.email && (
+                    <p className="text-red-500 text-sm">
+                      {securityErrors.email}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Required only when changing your password.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type="password"
+                    value={securityForm.currentPassword}
+                    onChange={handleSecurityChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InfoIcon className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Leave blank if you're only updating your email.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    value={securityForm.newPassword}
+                    onChange={handleSecurityChange}
+                  />
+                  {securityErrors.newPassword && (
+                    <p className="text-red-500 text-sm">
+                      {securityErrors.newPassword}
+                    </p>
+                  )}
+                </div>
+                {securityErrors.general && (
                   <p className="text-red-500 text-sm">
-                    {securityErrors.newPassword}
+                    {securityErrors.general}
                   </p>
                 )}
-              </div>
-              {securityErrors.general && (
-                <p className="text-red-500 text-sm">{securityErrors.general}</p>
-              )}
-              <CardFooter className="flex flex-col sm:flex-row justify-between gap-4">
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto bg-[#a0501a]"
-                  disabled={loading}
-                >
-                  {loading ? "Updating..." : "Update Security"}
-                </Button>
-              </CardFooter>
-            </form>
-          </TabsContent>
+                <CardFooter className="flex flex-col sm:flex-row justify-between gap-4">
+                  <Button
+                    type="submit"
+                    className="w-full sm:w-auto bg-[#a0501a]"
+                    disabled={loading}
+                  >
+                    {loading ? "Updating..." : "Update Security"}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>

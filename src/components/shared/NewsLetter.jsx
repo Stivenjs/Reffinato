@@ -83,14 +83,16 @@ export default function Newsletter() {
           <h3 className="text-xl font-semibold mb-4">Follow us on:</h3>
           <div className="flex justify-center space-x-4">
             <a
-              href="#"
+              href="https://www.facebook.com/profile.php?id=61569588989028"
+              target="_blank no-referrer"
               className="hover:text-gray-300 transition-colors duration-300"
             >
               <Facebook size={24} />
               <span className="sr-only">Facebook</span>
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/reffinatoshop/"
+              target="_blank no-referrer"
               className="hover:text-gray-300 transition-colors duration-300"
             >
               <Instagram size={24} />

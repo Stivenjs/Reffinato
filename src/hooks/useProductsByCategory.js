@@ -12,6 +12,6 @@ export const useProductsByCategory = (category) => {
   return useQuery({
     queryKey: ["products", category],
     queryFn: () => fetchProductsByCategory(category),
-    enabled: !!category, // Solo activa la consulta si hay una categoría definida
+    enabled: !!category, 
   });
 };

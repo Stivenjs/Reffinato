@@ -22,7 +22,7 @@ function ProductCard({ product, index, discountPercentage, hasSubscription }) {
   );
 
   return (
-    <BlurFade delay={0.25 + index * 0.05} inView={true}>
+    <BlurFade delay={0.10 + index * 0.00} inView={true}>
       <Link
         to={`/products-details/${product.id}`}
         state={{ discountPercentage }}
@@ -126,7 +126,6 @@ export default function Products() {
   const categories = ["All", "Bikini", "Swimsuits", "Beachwear"];
   const { user } = useAuthStore();
   const { data: subscription } = useSubscription(user?.uid);
-
   const { data: products, isLoading, error } = useProducts();
 
   const selectedCategory = location.state?.category || "All";

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { HelpCircle, Shirt, Users, MapPin } from "lucide-react";
 
+
 export default function Footer() {
   return (
     <footer className="bg-white text-gray-700 py-8">

@@ -1,86 +1,72 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   Heart,
   Share2,
+  Loader2,
   Facebook,
   Twitter,
   Instagram,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import { useProductById } from "@/hooks/fetchProductById";
+import { useSubscription } from "@/hooks/fetchSucriptions";
+import useFavoritesStore from "@/store/favoriteStore";
 import SizeSelector from "./SizeSelector";
-const products = [
-  {
-    id: 1,
-    name: "BLOUSON",
-    brand: "KEYSTONE Crudo",
-    price: 107.0,
-    images: [
-      "https://picsum.photos/seed/1/800/600",
-      "https://picsum.photos/seed/2/800/600",
-    ],
-    description:
-      "Un blouson elegante y versátil, perfecto para cualquier ocasión.",
-    details:
-      "• Material: 100% algodón\n• Cierre frontal con cremallera\n• Bolsillos laterales\n• Puños y cintura elásticos",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-  {
-    id: 2,
-    name: "PANTALÓN",
-    brand: "KEYSTONE Crudo",
-    price: 90.0,
-    images: [
-      "https://picsum.photos/seed/3/600/800",
-      "https://picsum.photos/seed/4/600/800",
-    ],
-    description: "Pantalón cómodo y estilizado, ideal para el día a día.",
-    details:
-      "• Material: 98% algodón, 2% elastano\n• Cierre con botón y cremallera\n• Bolsillos frontales y traseros\n• Corte recto",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-  {
-    id: 3,
-    name: "POLAR",
-    brand: "DEERVALLEY Crudo",
-    price: 126.0,
-    images: [
-      "https://picsum.photos/seed/5/800/600",
-      "https://picsum.photos/seed/6/800/600",
-    ],
-    description: "Polar cálido y confortable, perfecto para los días fríos.",
-    details:
-      "• Material: 100% poliéster\n• Cierre frontal con cremallera\n• Bolsillos laterales con cremallera\n• Puños elásticos",
-    deliveryReturns:
-      "• Entrega estándar: 3-5 días hábiles\n• Devoluciones gratuitas dentro de los 30 días posteriores a la recepción",
-  },
-];
+import useCartStore from "@/store/cartStore";
+import useAuthStore from "@/store/authStore";
+import {
+  calculateWeeklyDiscounts,
+  getDiscountForProduct,
+  calculateDiscountedPrice,
+} from "./discountLogic";
 
 export default function ProductDetails() {
+  const { addToCart } = useCartStore();
+  const { addToFavorites, removeFromFavorites, isFavorite } =
+    useFavoritesStore();
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const location = useLocation();
+  const { data: product, isLoading, isError } = useProductById(id);
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [openSection, setOpenSection] = useState(null);
+  const { toast } = useToast();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { data: subscription } = useSubscription(user?.uid);
+  const [discountPercentage, setDiscountPercentage] = useState(0);
 
   useEffect(() => {
-    const productId = parseInt(id);
-    const foundProduct = products.find((p) => p.id === productId);
-    setProduct(foundProduct);
-    if (foundProduct) {
-      setMainImage(foundProduct.images[0]);
+    if (product) {
+      const weeklyDiscounts = calculateWeeklyDiscounts([product], true);
+      const discount = getDiscountForProduct(product.id, weeklyDiscounts);
+      setDiscountPercentage(discount);
+      setMainImage(product.photos[0]);
+      if (product.colors && product.colors.length > 0) {
+        setSelectedColor(product.colors[0]);
+      }
     }
-  }, [id]);
+  }, [product]);
 
-  if (!product) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <div>Error loading product</div>;
   }
 
   const handleImageClick = (image) => {
@@ -104,14 +90,106 @@ export default function ProductDetails() {
     setOpenSection(openSection === section ? null : section);
   };
 
+  const handleAddToCart = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (selectedSize && selectedColor) {
+      const hasSubscription = subscription?.status === "active";
+      const finalPrice = hasSubscription
+        ? calculateDiscountedPrice(product.price, discountPercentage)
+        : product.price;
+
+      const productToAdd = {
+        ...product,
+        price: finalPrice,
+        originalPrice: product.price,
+        discountPercentage: hasSubscription ? discountPercentage : 0,
+      };
+
+      addToCart(productToAdd, selectedSize, quantity, selectedColor);
+
+      toast({
+        title: "Added to cart",
+        description: `${quantity} ${product.name} (Size: ${selectedSize}, Color: ${selectedColor}) added to cart`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a size and color before adding to cart",
+      });
+    }
+  };
+
+  const handleFavoriteClick = () => {
+    const hasSubscription = subscription?.status === "active";
+    const finalPrice = hasSubscription
+      ? calculateDiscountedPrice(product.price, discountPercentage)
+      : product.price;
+
+    const productToFavorite = {
+      ...product,
+      price: finalPrice,
+      originalPrice: product.price,
+      discountPercentage: hasSubscription ? discountPercentage : 0,
+    };
+
+    if (isFavorite(product.id)) {
+      removeFromFavorites(product.id);
+    } else {
+      addToFavorites(productToFavorite);
+    }
+  };
+
+  const discountedPrice = calculateDiscountedPrice(
+    product.price,
+    discountPercentage
+  );
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const productUrl = `${window.location.origin}/product/${id}`;
+
+  const handleShare = (platform) => {
+    let shareUrl;
+    const encodedProductUrl = encodeURIComponent(productUrl);
+    const encodedMessage = encodeURIComponent(
+      `Check out this product: ${product.name}`
+    );
+
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedProductUrl}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodedProductUrl}&text=${encodedMessage}`;
+        break;
+      case "instagram":
+        shareUrl = "https://www.instagram.com/";
+        break;
+      default:
+        return;
+    }
+
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+    setIsShareMenuOpen(false);
+  };
+
   return (
     <div className="container mx-auto px-15 md:px-8 lg:px-16 py-20 mt-24">
-      <Link
-        to="/products"
-        className="text-teal-800 hover:underline mb-4 inline-block"
+      <button
+        className="mb-6 flex items-center gap-2 text-lg font-semibold  hover:text-gray-900 transition-colors duration-200"
+        onClick={handleGoBack}
       >
-        &larr; Back to products
-      </Link>
+        <ChevronLeft className="h-5 w-5" />
+        Back
+      </button>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="relative overflow-hidden">
           <div
@@ -132,7 +210,7 @@ export default function ProductDetails() {
             />
           </div>
           <div className="mt-4 flex space-x-2 overflow-x-auto">
-            {product.images.map((img, index) => (
+            {product.photos.map((img, index) => (
               <img
                 key={index}
                 src={img}
@@ -145,14 +223,60 @@ export default function ProductDetails() {
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
-          <p className="text-lg md:text-xl text-gray-600 mt-2">
-            {product.brand}
-          </p>
-          <p className="text-xl md:text-2xl font-bold mt-4">
-            {product.price.toFixed(2)} €
-          </p>
+          <div className="mt-4">
+            {subscription?.status === "active" ? (
+              <>
+                <p className="text-xl md:text-2xl font-bold">
+                  {discountPercentage}% OFF
+                </p>
+                <p className="text-xl md:text-2xl font-bold line-through text-gray-500">
+                  ${Number(product.price).toFixed(2)}
+                </p>
+                <p className="text-xl md:text-2xl font-bold text-red-600">
+                  ${Number(discountedPrice).toFixed(2)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl md:text-2xl font-bold">
+                  ${Number(product.price).toFixed(2)}
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  Reffinato Gold: ${Number(discountedPrice).toFixed(2)}
+                </p>
+              </>
+            )}
+          </div>
           <div className="mt-6">
-            <SizeSelector onSizeChange={setSelectedSize} />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Color
+            </label>
+            <div className="flex space-x-2">
+              {product.colors.map((color) => (
+                <button
+                  key={color}
+                  className={`w-8 h-8 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    selectedColor === color
+                      ? "ring-2 ring-offset-2 ring-gray-500"
+                      : ""
+                  }`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
+                  aria-label={`Select ${color} color`}
+                />
+              ))}
+            </div>
+            {selectedColor && (
+              <p className="mt-2 text-sm text-gray-500">
+                Selected: {selectedColor}
+              </p>
+            )}
+          </div>
+          <div className="mt-6">
+            <SizeSelector
+              sizes={product.sizes}
+              onSizeChange={setSelectedSize}
+            />
           </div>
           <div className="mt-6">
             <label
@@ -170,40 +294,58 @@ export default function ProductDetails() {
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-800 focus:border-teal-800 sm:text-sm"
             />
           </div>
-          <button className="mt-8 w-full bg-teal-800 border border-transparent py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+          <button
+            className="mt-8 w-full bg-[#a0501a] border border-transparent py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-[#8b4513] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-[#8b4513]"
+            onClick={handleAddToCart}
+          >
             Add to cart
           </button>
           <div className="mt-6 flex items-center justify-between">
-            <button className="text-teal-800 hover:text-teal-800">
-              <Heart className="h-6 w-6" />
+            <button
+              onClick={handleFavoriteClick}
+              className="group relative p-2 transition-all duration-300 hover:scale-110 "
+              aria-label={
+                isFavorite(product.id)
+                  ? "Remove from favorites"
+                  : "Add to favorites"
+              }
+            >
+              <Heart
+                className={`h-6 w-6 transition-colors duration-300 ${
+                  isFavorite(product.id)
+                    ? "fill-primary text-primary"
+                    : "text-black-400 group-hover:text-primary"
+                }`}
+              />
+            
             </button>
             <div className="relative">
               <button
-                className="text-teal-800 hover:text-teal-800"
+                className="hover:text-[#8b4513]"
                 onClick={toggleShareMenu}
               >
                 <Share2 className="h-6 w-6" />
               </button>
               {isShareMenuOpen && (
                 <div className="absolute right-0 mt-2 py-2 w-48 bg-white shadow-xl z-20">
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  <button
+                    onClick={() => handleShare("facebook")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Facebook className="w-4 h-4 mr-2" /> Facebook
-                  </a>
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  </button>
+                  <button
+                    onClick={() => handleShare("twitter")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Twitter className="w-4 h-4 mr-2" /> Twitter
-                  </a>
-                  <a
-                    href="#"
-                    className=" px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  </button>
+                  <button
+                    onClick={() => handleShare("instagram")}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center w-full"
                   >
                     <Instagram className="w-4 h-4 mr-2" /> Instagram
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
@@ -223,12 +365,12 @@ export default function ProductDetails() {
               )}
             </button>
             {openSection === "description" && (
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-4 text-sm text-gray-700">
                 {product.description}
               </p>
             )}
           </div>
-          <div className="mt-4 border-t pt-8">
+          <div className="mt-8 border-t pt-8">
             <button
               className="flex items-center justify-between w-full"
               onClick={() => toggleSection("details")}
@@ -241,29 +383,7 @@ export default function ProductDetails() {
               )}
             </button>
             {openSection === "details" && (
-              <p className="mt-4 text-sm text-gray-500 whitespace-pre-line">
-                {product.details}
-              </p>
-            )}
-          </div>
-          <div className="mt-4 border-t pt-8">
-            <button
-              className="flex items-center justify-between w-full"
-              onClick={() => toggleSection("deliveryReturns")}
-            >
-              <span className="text-sm font-medium text-gray-900">
-                Delivery and returns
-              </span>
-              {openSection === "deliveryReturns" ? (
-                <ChevronUp className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {openSection === "deliveryReturns" && (
-              <p className="mt-4 text-sm text-gray-500 whitespace-pre-line">
-                {product.deliveryReturns}
-              </p>
+              <p className="mt-4 text-sm text-gray-700">{product.details}</p>
             )}
           </div>
         </div>

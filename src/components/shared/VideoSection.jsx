@@ -1,98 +1,117 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const videos = [
   {
-    src: "https://videos.pexels.com/video-files/27545637/12164137_1920_1080_60fps.mp4",
-    phrase: "Descubre la elegancia playera",
+    src: "https://videos.pexels.com/video-files/1409899/1409899-uhd_2560_1440_25fps.mp4",
+    phrase: "Discover beach elegance",
   },
   {
-    src: "https://videos.pexels.com/video-files/28339273/12362445_2560_1440_24fps.mp4",
-    phrase: "Vive el verano con estilo",
+    src: "https://videos.pexels.com/video-files/3327058/3327058-hd_1920_1080_24fps.mp4",
+    phrase: "Live summer in style",
   },
   {
-    src: "https://videos.pexels.com/video-files/26890208/12027365_2560_1440_24fps.mp4",
-    phrase: "Siente la brisa del mar",
+    src: "https://videos.pexels.com/video-files/3115738/3115738-uhd_2560_1440_24fps.mp4",
+    phrase: "Feel the sea breeze",
   },
 ];
 
 export default function VideoSection() {
   const [currentVideo, setCurrentVideo] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const videoRefs = useRef([]);
+  const sectionRef = useRef(null);
+
+  const nextVideo = (currentVideo + 1) % videos.length;
+
+  const changeVideo = useCallback(() => {
+    setCurrentVideo((prev) => (prev + 1) % videos.length);
+  }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isTransitioning) {
-        setCurrentVideo((prev) => (prev + 1) % videos.length);
-      }
-    }, 3000);
+    const interval = setInterval(changeVideo, 8000);
     return () => clearInterval(interval);
-  }, [isTransitioning]);
+  }, [changeVideo]);
 
   useEffect(() => {
-    setIsTransitioning(true);
-    const timer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 1000);
-
     videoRefs.current.forEach((video, index) => {
       if (video) {
-        if (index === currentVideo) {
-          video.play();
+        if (index === currentVideo || index === nextVideo) {
+          video
+            .play()
+            .catch((error) => console.error("Error playing video:", error));
+        } else {
+          video.pause();
+          video.currentTime = 0;
         }
       }
     });
+  }, [currentVideo, nextVideo]);
 
-    return () => clearTimeout(timer);
-  }, [currentVideo]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoRefs.current[currentVideo]?.play();
+            videoRefs.current[nextVideo]?.play();
+          } else {
+            videoRefs.current.forEach((video) => video?.pause());
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [currentVideo, nextVideo]);
 
   return (
-    <section className="relative h-screen overflow-hidden">
-      <AnimatePresence initial={false}>
+    <section ref={sectionRef} className="relative h-screen overflow-hidden">
+      {videos.map((video, index) => (
         <motion.div
-          key={currentVideo}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.2 }}
+          key={index}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: index === currentVideo ? 1 : 0 }}
           transition={{ duration: 1, ease: "easeInOut" }}
           className="absolute inset-0 flex items-center justify-center"
+          style={{ zIndex: index === currentVideo ? 1 : 0 }}
         >
           <video
-            ref={(el) => (videoRefs.current[currentVideo] = el)}
-            src={videos[currentVideo].src}
+            ref={(el) => el && (videoRefs.current[index] = el)}
+            src={video.src}
             className="absolute w-full h-full object-cover"
             muted
             loop
+            playsInline
+            preload="auto"
           />
-          <div className="absolute inset-0  flex items-center justify-center">
-            <motion.h2
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="text-4xl md:text-6xl text-white font-bold text-center px-4"
-            >
-              {videos[currentVideo].phrase}
-            </motion.h2>
-          </div>
+          <AnimatePresence>
+            {index === currentVideo && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30"
+              >
+                <motion.h2
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                  className="text-4xl md:text-6xl text-white font-bold text-center px-4"
+                >
+                  {video.phrase}
+                </motion.h2>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      </AnimatePresence>
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
-        <div className="flex space-x-2">
-          {videos.map((_, index) => (
-            <button
-              key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentVideo
-                  ? "bg-white scale-125"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-              onClick={() => !isTransitioning && setCurrentVideo(index)}
-            />
-          ))}
-        </div>
-      </div>
+      ))}
     </section>
   );
 }
